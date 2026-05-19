@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Contact | Nucore Technologies</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main>
+      <section class="section contact-section" data-reveal>
+        <div class="page-hero-copy">
+          <h1>Contact Us</h1>
+          <p>Submit a request and the Nucore team will follow up.</p>
+        </div>
+        <form class="contact-form" action="mailto:hello@nucore.ai" method="post" enctype="text/plain">
+          <label>Name <input name="name" required></label>
+          <label>Work email <input name="email" type="email" required></label>
+          <label>Company <input name="company"></label>
+          <label>Request type <select name="request"><option>GPU Systems</option><option>Software Suite</option><option>Cost Analysis</option><option>Partnership</option></select></label>
+          <label>Message <textarea name="message" required></textarea></label>
+          <button class="home-button home-button--filled" type="submit">Submit Request</button>
+        </form>
+      </section>
+    </main>
+    <script src="site.js"></script>
+    <script src="nav.js"></script>
+    <script src="scroll.js"></script>
+  </body>
+</html>
