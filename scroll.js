@@ -26,23 +26,56 @@ dataReveals.forEach((item) => {
 
 if (rotatingWord) {
   const words = rotatingWord.dataset.rotator.split(",").map((word) => word.trim());
+  const rotatorWrap = rotatingWord.closest(".rotator-wrap");
   let index = 0;
+  let isAnimating = false;
 
-  window.setInterval(() => {
-    index = (index + 1) % words.length;
-    rotatingWord.animate(
-      [
-        { opacity: 1, transform: "translateY(0)" },
-        { opacity: 0, transform: "translateY(-0.22em)" },
-        { opacity: 0, transform: "translateY(0.22em)" },
-        { opacity: 1, transform: "translateY(0)" }
-      ],
-      { duration: 680, easing: "ease" }
-    );
+  function measureRotatorWord(word) {
+    const probe = document.createElement("span");
+    probe.className = "rotator";
+    probe.textContent = word;
+    probe.style.cssText =
+      "position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;pointer-events:none;";
+    const styles = getComputedStyle(rotatingWord);
+    probe.style.font = styles.font;
+    probe.style.letterSpacing = styles.letterSpacing;
+    probe.style.textTransform = styles.textTransform;
+    rotatingWord.parentElement.appendChild(probe);
+    const width = probe.offsetWidth;
+    probe.remove();
+    return width;
+  }
+
+  function setRotatorWidth(word) {
+    if (!rotatorWrap) return;
+    const width = Math.ceil(measureRotatorWord(word));
+    rotatorWrap.style.setProperty("--rotator-width", `${width}px`);
+    rotatorWrap.style.width = `${width}px`;
+  }
+
+  function cycleRotator() {
+    if (isAnimating) return;
+    isAnimating = true;
+    rotatingWord.classList.add("is-exiting");
+
     window.setTimeout(() => {
+      index = (index + 1) % words.length;
       rotatingWord.textContent = words[index];
-    }, 320);
-  }, 2500);
+      setRotatorWidth(words[index]);
+      rotatingWord.classList.remove("is-exiting");
+      rotatingWord.classList.add("is-entering");
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          rotatingWord.classList.remove("is-entering");
+          isAnimating = false;
+        });
+      });
+    }, 520);
+  }
+
+  setRotatorWidth(words[index]);
+  window.setInterval(cycleRotator, 3200);
 }
 
 const growthViewport = document.querySelector(".growth-viewport");

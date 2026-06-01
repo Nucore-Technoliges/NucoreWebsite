@@ -16,9 +16,10 @@ function navMarkup() {
   return `
     <nav class="site-nav" aria-label="Primary navigation">
       <a class="brand" href="index.html" aria-label="Nucore home">
-        <img class="brand-logo-img" src="assets/nucore-logo-white.png" alt="Nucore logo">
+        <img class="brand-logo-img" src="assets/nucore-logo.png" alt="Nucore" width="1024" height="1024">
       </a>
       <div class="nav-center">
+        <a href="index.html">Home</a>
         <div class="dropdown">
           <button class="dropdown-trigger" type="button">Products</button>
           <div class="dropdown-menu">
@@ -36,17 +37,13 @@ function navMarkup() {
       <button class="hamburger" type="button" aria-label="Open navigation" aria-expanded="false"><span></span></button>
     </nav>
     <div class="mobile-panel" aria-label="Mobile navigation">
+      <a href="index.html">Home</a>
       <a href="gpus.html">GPU Systems</a>
       <a href="software.html">Software Suite</a>
       <a href="research.html">Research</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
       <a href="cost-calculator.html">Demo</a>
-      <div class="mobile-social">
-        <a href="mailto:hello@nucore.ai">Email</a>
-        <a href="https://instagram.com/nucore">Instagram</a>
-        <a href="https://linkedin.com/company/nucore">LinkedIn</a>
-      </div>
     </div>
   `;
 }
