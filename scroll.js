@@ -1,177 +1,109 @@
-const sections = document.querySelectorAll(".section");
-const reveals = document.querySelectorAll(".reveal");
-const dataReveals = document.querySelectorAll("[data-reveal]");
-const rotatingWord = document.querySelector("[data-rotator]");
+function splitHeadlines() {
+  document.querySelectorAll(".headline-split").forEach((headline) => {
+    const rawLines = headline.innerHTML.split(/<br\s*\/?>/i);
+    headline.innerHTML = rawLines.map((line) => {
+      const template = document.createElement("template");
+      template.innerHTML = line.trim();
+      const text = template.content.textContent || "";
+      const words = text.split(/\s+/).filter(Boolean).map((word) => `<span class="word">${word}</span>`).join(" ");
+      return `<span class="line-mask">${words}</span>`;
+    }).join("");
+  });
+}
 
-const revealObserver = new IntersectionObserver(
-  (entries) => {
+function revealHeadline(headline) {
+  const lines = [...headline.querySelectorAll(".line-mask")];
+  const baseDelay = Number(headline.dataset.delay || 0) * 1000;
+  let offset = 0;
+  lines.forEach((line, lineIndex) => {
+    const words = [...line.querySelectorAll(".word")];
+    words.forEach((word, wordIndex) => {
+      window.setTimeout(() => word.classList.add("revealed"), baseDelay + offset + lineIndex * 120 + wordIndex * 60);
+    });
+    offset += words.length * 60;
+  });
+}
+
+function animateCount(el) {
+  if (el.dataset.counted) return;
+  el.dataset.counted = "true";
+  const text = el.textContent.trim();
+  const match = text.match(/^(\d+(?:\.\d+)?)(.*)$/);
+  if (!match) return;
+  const target = Number(match[1]);
+  const suffix = match[2];
+  const start = performance.now();
+  const duration = 1400;
+  function frame(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = `${Math.round(target * eased)}${suffix}`;
+    if (t < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function typeDashboard(card) {
+  if (card.dataset.typed) return;
+  card.dataset.typed = "true";
+  [...card.querySelectorAll(".dash-row")].forEach((row, index) => {
+    window.setTimeout(() => row.classList.add("is-typed"), 300 + index * 100);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  splitHeadlines();
+
+  document.querySelectorAll("[data-delay]").forEach((el) => {
+    el.style.transitionDelay = `${el.dataset.delay}s`;
+  });
+
+  const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("is-visible");
-        entry.target.classList.add("revealed");
-      }
-    });
-  },
-  { threshold: 0.2 }
-);
-
-sections.forEach((section) => revealObserver.observe(section));
-reveals.forEach((item) => revealObserver.observe(item));
-dataReveals.forEach((item) => {
-  if (item.dataset.delay) {
-    item.style.transitionDelay = `${item.dataset.delay}s`;
-  }
-  revealObserver.observe(item);
-});
-
-if (rotatingWord) {
-  const words = rotatingWord.dataset.rotator.split(",").map((word) => word.trim());
-  const rotatorWrap = rotatingWord.closest(".rotator-wrap");
-  let index = 0;
-  let isAnimating = false;
-
-  function measureRotatorWord(word) {
-    const probe = document.createElement("span");
-    probe.className = "rotator";
-    probe.textContent = word;
-    probe.style.cssText =
-      "position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;pointer-events:none;";
-    const styles = getComputedStyle(rotatingWord);
-    probe.style.font = styles.font;
-    probe.style.letterSpacing = styles.letterSpacing;
-    probe.style.textTransform = styles.textTransform;
-    rotatingWord.parentElement.appendChild(probe);
-    const width = probe.offsetWidth;
-    probe.remove();
-    return width;
-  }
-
-  function setRotatorWidth(word) {
-    if (!rotatorWrap) return;
-    const width = Math.ceil(measureRotatorWord(word));
-    rotatorWrap.style.setProperty("--rotator-width", `${width}px`);
-    rotatorWrap.style.width = `${width}px`;
-  }
-
-  function cycleRotator() {
-    if (isAnimating) return;
-    isAnimating = true;
-    rotatingWord.classList.add("is-exiting");
-
-    window.setTimeout(() => {
-      index = (index + 1) % words.length;
-      rotatingWord.textContent = words[index];
-      setRotatorWidth(words[index]);
-      rotatingWord.classList.remove("is-exiting");
-      rotatingWord.classList.add("is-entering");
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          rotatingWord.classList.remove("is-entering");
-          isAnimating = false;
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      if (el.classList.contains("headline-split")) revealHeadline(el);
+      if (el.classList.contains("list-reveal")) {
+        [...el.querySelectorAll("li")].forEach((li, index) => {
+          window.setTimeout(() => li.classList.add("revealed"), index * 90);
         });
-      });
-    }, 520);
-  }
-
-  setRotatorWidth(words[index]);
-  window.setInterval(cycleRotator, 3200);
-}
-
-const growthViewport = document.querySelector(".growth-viewport");
-
-if (growthViewport) {
-  const growthSteps = [...growthViewport.querySelectorAll(".growth-step")];
-  const growthLine = document.querySelector(".growth-line");
-
-  function updateGrowthPath() {
-    const maxScroll = Math.max(1, growthViewport.scrollHeight - growthViewport.clientHeight);
-    const progress = growthViewport.scrollTop / maxScroll;
-    const activeIndex = Math.min(
-      growthSteps.length - 1,
-      Math.round(progress * (growthSteps.length - 1))
-    );
-
-    growthSteps.forEach((step, index) => {
-      step.classList.toggle("is-active", index === activeIndex);
+      } else {
+        el.classList.add("revealed");
+      }
+      if (el.classList.contains("count-up")) animateCount(el);
+      if (el.classList.contains("control-plane")) {
+        typeDashboard(el);
+        el.querySelectorAll(".count-up").forEach(animateCount);
+      }
+      observer.unobserve(el);
     });
+  }, { threshold: 0.15 });
 
-    if (growthLine) {
-      growthLine.style.setProperty("--growth-progress", `${Math.max(4, progress * 100)}%`);
-    }
-  }
+  document.querySelectorAll("[data-reveal], .list-reveal, .draw-line, .headline-split, .count-up, .stack-bar").forEach((el) => observer.observe(el));
 
-  growthViewport.addEventListener("scroll", updateGrowthPath, { passive: true });
-  updateGrowthPath();
-}
+  document.querySelectorAll(".word-cycle").forEach((cycle) => {
+    const words = [...cycle.querySelectorAll("span")];
+    let index = 0;
+    words[0]?.classList.add("is-visible");
+    window.setInterval(() => {
+      const current = words[index];
+      index = (index + 1) % words.length;
+      const next = words[index];
+      current.classList.remove("is-visible");
+      current.classList.add("is-exiting");
+      next.classList.add("is-visible");
+      window.setTimeout(() => current.classList.remove("is-exiting"), 400);
+    }, 2800);
+  });
 
-document.querySelectorAll(".layer-bar").forEach((bar) => {
-  bar.addEventListener("click", () => {
-    const panel = bar.closest(".section")?.querySelector(".layer-panel") || document.querySelector(".layer-panel");
-    const [label, title, description] = bar.dataset.panel.split("|");
-    bar.parentElement.querySelectorAll(".layer-bar").forEach((item) => item.classList.remove("is-active"));
-    bar.classList.add("is-active");
-    if (panel) {
-      panel.innerHTML = `<p>${label}</p><h2>${title}</h2><span>${description}</span>`;
-    }
+  document.querySelectorAll(".form-card").forEach((form) => {
+    form.addEventListener("submit", (event) => event.preventDefault());
+  });
+
+  document.querySelectorAll(".anchor-pills a").forEach((anchor) => {
+    anchor.addEventListener("click", () => {
+      document.querySelectorAll(".anchor-pills a").forEach((a) => a.classList.remove("is-active"));
+      anchor.classList.add("is-active");
+    });
   });
 });
-
-const flowModal = document.querySelector(".flow-modal");
-if (flowModal) {
-  const modalText = flowModal.querySelector("p");
-  const closeButton = flowModal.querySelector("button");
-  document.querySelectorAll("[data-modal]").forEach((button) => {
-    button.addEventListener("click", () => {
-      modalText.textContent = button.dataset.modal;
-      flowModal.hidden = false;
-    });
-  });
-  closeButton.addEventListener("click", () => {
-    flowModal.hidden = true;
-  });
-}
-
-const calculator = document.querySelector("[data-calculator]");
-if (calculator) {
-  const gpuInput = calculator.querySelector("[data-gpu-count]");
-  const gpuOutput = calculator.querySelector("output");
-  const monthlyInput = calculator.querySelector("[data-monthly-cost]");
-  const workloadInput = calculator.querySelector("[data-workload]");
-  const providerInput = calculator.querySelector("[data-provider]");
-  const nucoreCost = calculator.querySelector("[data-nucore-cost]");
-  const savings = calculator.querySelector("[data-savings]");
-  const delta = calculator.querySelector("[data-delta]");
-  const bars = calculator.querySelectorAll(".calc-results i");
-
-  function money(value) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0
-    }).format(value);
-  }
-
-  function updateCalculator() {
-    const gpuCount = Number(gpuInput.value);
-    const monthlyCloud = Number(monthlyInput.value || 0);
-    const workloadFactor = { training: 0.72, inference: 0.62, mixed: 0.67 }[workloadInput.value];
-    const providerFactor = { aws: 1, azure: 0.97, gcp: 0.94, other: 0.9 }[providerInput.value];
-    const estimated = Math.max(0, monthlyCloud * workloadFactor * providerFactor);
-    const annual = Math.max(0, (monthlyCloud - estimated) * 12);
-    const perf = Math.round(18 + gpuCount / 16);
-
-    gpuOutput.textContent = gpuCount;
-    nucoreCost.textContent = money(estimated);
-    savings.textContent = money(annual);
-    delta.textContent = `${perf}%`;
-    bars[0].style.setProperty("--bar", `${Math.min(95, estimated / Math.max(1, monthlyCloud) * 100)}%`);
-    bars[1].style.setProperty("--bar", `${Math.min(95, annual / Math.max(1, monthlyCloud * 12) * 100)}%`);
-    bars[2].style.setProperty("--bar", `${Math.min(95, perf)}%`);
-  }
-
-  calculator.querySelectorAll("input, select").forEach((field) => {
-    field.addEventListener("input", updateCalculator);
-  });
-  updateCalculator();
-}
