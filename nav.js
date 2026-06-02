@@ -11,6 +11,7 @@ document.body.insertAdjacentHTML("afterbegin", `
       <a class="nav-link" href="products.html">Products</a>
       <a class="nav-link" href="design.html">Design</a>
       <a class="nav-link" href="research.html">Research</a>
+      <a class="nav-link" href="calculator.html">Savings Calculator</a>
       <a class="nav-link" href="contact.html">Contact Us</a>
     </div>
     <div class="nav-actions"><a class="btn btn--outline" href="${CALENDLY_URL}">Book a Demo</a></div>
@@ -20,6 +21,7 @@ document.body.insertAdjacentHTML("afterbegin", `
     <a href="products.html">Products</a>
     <a href="design.html">Design</a>
     <a href="research.html">Research</a>
+    <a href="calculator.html">Savings Calculator</a>
     <a href="contact.html">Contact Us</a>
     <a class="btn btn--filled" href="${CALENDLY_URL}">Book a Demo</a>
   </div>

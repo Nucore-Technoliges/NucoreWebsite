@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Savings Calculator | Nucore Technologies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+
+  <section class="section section-light calc-hero">
+    <div class="wrap">
+      <p class="label" data-reveal>Savings Calculator</p>
+      <h1 class="display-lg headline-split">See what Nucore<br>would cost you.</h1>
+      <p class="muted calc-lede" data-reveal data-delay="0.2">Tell us your monthly token volume, your current cloud spend, and what you're running. We'll show how many Vera Rubin units you need, what it costs vs. the cloud or buying H100s outright, and how fast it pays back.</p>
+    </div>
+  </section>
+
+  <section class="section section-light calc-section">
+    <div class="wrap calc-grid">
+
+      <form class="calc-form" data-reveal id="calcForm" onsubmit="return false">
+        <h2 class="calc-h">Your workload</h2>
+
+        <label class="calc-field">
+          <span>Industry</span>
+          <select id="calcIndustry">
+            <option value="finance">Finance &amp; Trading</option>
+            <option value="healthcare">Healthcare &amp; Biotech</option>
+            <option value="defense">Defense &amp; Intelligence</option>
+            <option value="robotics">Robotics &amp; Autonomy</option>
+            <option value="energy">Energy &amp; Climate</option>
+            <option value="research">Research Lab</option>
+            <option value="enterprise">Enterprise SaaS</option>
+          </select>
+        </label>
+
+        <label class="calc-field">
+          <span>Use case for compute</span>
+          <select id="calcUseCase">
+            <option value="inference">Continuous Inference / Serving</option>
+            <option value="training">Model Training</option>
+            <option value="finetune">Fine-tuning</option>
+            <option value="agents">Multi-Agent Pipelines</option>
+            <option value="rag">RAG / Retrieval Workloads</option>
+            <option value="research">Research &amp; Experimentation</option>
+          </select>
+        </label>
+
+        <label class="calc-field">
+          <span>Monthly token volume <em>(tokens / month)</em></span>
+          <input id="calcTokens" type="text" inputmode="numeric" value="50,000,000,000">
+          <div class="calc-presets">
+            <button type="button" data-tokens="5000000000">5B</button>
+            <button type="button" data-tokens="50000000000">50B</button>
+            <button type="button" data-tokens="500000000000">500B</button>
+            <button type="button" data-tokens="2000000000000">2T</button>
+          </div>
+        </label>
+
+        <label class="calc-field">
+          <span>Current monthly cloud bill <em>(USD)</em></span>
+          <input id="calcCloud" type="text" inputmode="numeric" value="220,000">
+        </label>
+
+        <label class="calc-field">
+          <span>Amortization horizon</span>
+          <select id="calcHorizon">
+            <option value="12">12 months</option>
+            <option value="24" selected>24 months</option>
+            <option value="36">36 months</option>
+            <option value="48">48 months</option>
+          </select>
+        </label>
+
+        <button type="button" class="btn btn--filled btn--large" id="calcGo">Calculate Savings</button>
+      </form>
+
+      <div class="calc-results" data-reveal data-delay="0.15" id="calcResults">
+        <div class="result-header">
+          <p class="label">Your Nucore Build</p>
+          <h2 class="display-md" id="resTitle">Vera Rubin Deployment</h2>
+          <p class="muted" id="resSubtitle">Configured for continuous inference at 50B tokens / month.</p>
+        </div>
+
+        <div class="result-hero">
+          <div class="result-hero-num">
+            <span class="result-big" id="resUnits">12</span>
+            <span class="result-unit">Vera Rubin units</span>
+          </div>
+          <div class="result-hero-num">
+            <span class="result-big" id="resCost">$480K</span>
+            <span class="result-unit">Upfront capex</span>
+          </div>
+          <div class="result-hero-num">
+            <span class="result-big result-big--accent" id="resSavings">$4.8M</span>
+            <span class="result-unit" id="resSavingsLabel">Saved vs. cloud over 24 mo</span>
+          </div>
+        </div>
+
+        <div class="compare-grid">
+          <article class="compare-card compare-card--nucore">
+            <span class="compare-badge">NUCORE · BEST VALUE</span>
+            <h3>Vera Rubin (owned)</h3>
+            <ul>
+              <li><span>Units required</span><strong id="cmpNuUnits">12</strong></li>
+              <li><span>Upfront cost</span><strong id="cmpNuUpfront">$480,000</strong></li>
+              <li><span>Monthly (amortized)</span><strong id="cmpNuMonthly">$20,000</strong></li>
+              <li><span>Total over horizon</span><strong id="cmpNuTotal">$540,000</strong></li>
+              <li><span>Throughput / unit</span><strong>4.5B tok / mo</strong></li>
+              <li><span>Effective utilization</span><strong>96%</strong></li>
+              <li><span>Orion software suite</span><strong class="cmp-yes">Included</strong></li>
+            </ul>
+            <p class="compare-note">$40,000 per unit · You own the silicon · Data stays on-prem · Titan LLM tuned in.</p>
+          </article>
+
+          <article class="compare-card">
+            <span class="compare-badge compare-badge--neutral">CLOUD GPU RENTAL</span>
+            <h3>Hyperscaler (H100 on-demand)</h3>
+            <ul>
+              <li><span>Monthly bill</span><strong id="cmpClMonthly">$220,000</strong></li>
+              <li><span>Total over horizon</span><strong id="cmpClTotal">$6,442,000</strong></li>
+              <li><span>Egress + overhead</span><strong id="cmpClOver">+22%</strong></li>
+              <li><span>Latency penalty</span><strong>+30–80 ms</strong></li>
+              <li><span>Data sovereignty</span><strong class="cmp-no">No</strong></li>
+              <li><span>Spike pricing</span><strong class="cmp-no">Uncapped</strong></li>
+              <li><span>Software suite</span><strong>DIY</strong></li>
+            </ul>
+            <p class="compare-note">Recurring forever. Bill scales with usage spikes and egress.</p>
+          </article>
+
+          <article class="compare-card">
+            <span class="compare-badge compare-badge--neutral">DIRECT BUY · H100</span>
+            <h3>NVIDIA H100 cluster</h3>
+            <ul>
+              <li><span>Units required</span><strong id="cmpH1Units">20</strong></li>
+              <li><span>Upfront cost</span><strong id="cmpH1Upfront">$760,000</strong></li>
+              <li><span>Total over horizon</span><strong id="cmpH1Total">$2,104,000</strong></li>
+              <li><span>Throughput / unit</span><strong>3.46B tok / mo</strong></li>
+              <li><span>Effective utilization</span><strong>78%</strong></li>
+              <li><span>Power draw</span><strong class="cmp-no">+38%</strong></li>
+              <li><span>Software stack</span><strong class="cmp-no">DIY</strong></li>
+            </ul>
+            <p class="compare-note">$38,000 per unit · 30% less throughput · No tuned LLM · MLOps build-out required.</p>
+          </article>
+        </div>
+
+        <div class="advantage-block">
+          <h3 class="adv-title">Why this build wins with Nucore</h3>
+          <div class="adv-grid">
+            <div class="adv-card"><span class="adv-num" id="advRoi">2.4 mo</span><p>Payback period vs. continuing cloud spend</p></div>
+            <div class="adv-card"><span class="adv-num" id="advPerf">+60%</span><p>Effective throughput per unit vs. H100 (Orion utilization gain)</p></div>
+            <div class="adv-card"><span class="adv-num" id="advPerDollar">3.2x</span><p>Tokens per dollar vs. cloud rental</p></div>
+            <div class="adv-card"><span class="adv-num" id="advLatency">12 ms</span><p>First-token latency on Titan-tuned inference</p></div>
+          </div>
+          <ul class="adv-list" id="advList">
+            <li>✓ Sovereign on-prem deploy — no data egress, no shared tenancy.</li>
+            <li>✓ Titan LLM tuned to Vera Rubin silicon, included.</li>
+            <li>✓ Predictable capex instead of variable cloud bill.</li>
+            <li>✓ White-glove software suite — no MLOps build-out required.</li>
+          </ul>
+        </div>
+
+        <div class="calc-cta">
+          <a class="btn btn--filled btn--large" href="https://calendly.com/nucore">Book a Demo with this build</a>
+          <a class="btn btn--outline btn--large" href="contact.html">Get a detailed quote</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-dark section-half center">
+    <div>
+      <h2 class="display-lg headline-split">The math is the pitch.</h2>
+      <p data-reveal data-delay="0.25">Run your real workload on a Nucore rack. We'll send back the benchmark.</p>
+      <a class="btn btn--outline btn--white btn--large" style="margin-top:32px" data-reveal data-delay="0.4" href="https://calendly.com/nucore">Schedule a Call</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="products.html#vera-rubin">Vera Rubin</a><a href="products.html#software">Software Suite</a><a href="products.html#platform">Platform</a></div>
+    <div><h3>Company</h3><a href="contact.html">Contact</a><a href="calculator.html">Savings Calculator</a></div>
+    <div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+
+<script src="nav.js"></script>
+<script src="scroll.js"></script>
+<script src="calculator.js"></script>
+</body>
+</html>
