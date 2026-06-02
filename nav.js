@@ -1,29 +1,16 @@
 const CALENDLY_URL = "https://calendly.com/nucore";
 
 function logoSvg() {
-  return `
-    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-      <path d="M8 26V6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
-      <path d="M9 6l14 20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
-      <path d="M24 6v20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
-    </svg>`;
+  return `<img class="brand-mark" src="assets/nucore-logo.png" alt="Nucore" />`;
 }
 
 document.body.insertAdjacentHTML("afterbegin", `
   <nav class="site-nav" aria-label="Primary">
-    <a class="brand" href="index.html" aria-label="Nucore home">${logoSvg()}<span class="brand-word">NUCORE</span></a>
+    <a class="brand" href="index.html" aria-label="Nucore home">${logoSvg()}<img class="brand-word" src="assets/nucore-wordmark.png" alt="Nucore"></a>
     <div class="nav-center">
-      <div class="dropdown">
-        <button class="dropdown-trigger" type="button" aria-expanded="false">Products</button>
-        <div class="dropdown-menu">
-          <a href="products.html#vera-rubin">Vera Rubin</a>
-          <a href="products.html#blackwell">Blackwell</a>
-          <a href="products.html#5090ti">5090Ti</a>
-        </div>
-      </div>
-      <a class="nav-link" href="interactive-models.html">Interactive Models</a>
+      <a class="nav-link" href="products.html">Products</a>
+      <a class="nav-link" href="design.html">Design</a>
       <a class="nav-link" href="research.html">Research</a>
-      <a class="nav-link" href="about.html">About Us</a>
       <a class="nav-link" href="contact.html">Contact Us</a>
     </div>
     <div class="nav-actions"><a class="btn btn--outline" href="${CALENDLY_URL}">Book a Demo</a></div>
@@ -31,9 +18,8 @@ document.body.insertAdjacentHTML("afterbegin", `
   </nav>
   <div class="mobile-panel" hidden>
     <a href="products.html">Products</a>
-    <a href="interactive-models.html">Interactive Models</a>
+    <a href="design.html">Design</a>
     <a href="research.html">Research</a>
-    <a href="about.html">About Us</a>
     <a href="contact.html">Contact Us</a>
     <a class="btn btn--filled" href="${CALENDLY_URL}">Book a Demo</a>
   </div>

@@ -81,6 +81,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll("[data-reveal], .list-reveal, .draw-line, .headline-split, .count-up, .stack-bar").forEach((el) => observer.observe(el));
 
+  // Overview visual switcher
+  const ovItems = document.querySelectorAll(".overview-item[data-visual]");
+  if (ovItems.length) {
+    const ovPanels = {};
+    document.querySelectorAll(".ov-panel").forEach((el) => {
+      const key = [...el.classList].find((c) => c.startsWith("ov-panel-"))?.replace("ov-panel-", "");
+      if (key) ovPanels[key] = el;
+    });
+    const ovObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.45) {
+          const key = entry.target.dataset.visual;
+          Object.values(ovPanels).forEach((p) => p.classList.remove("is-active"));
+          if (ovPanels[key]) ovPanels[key].classList.add("is-active");
+        }
+      });
+    }, { threshold: 0.45 });
+    ovItems.forEach((item) => ovObserver.observe(item));
+  }
+
   document.querySelectorAll(".word-cycle").forEach((cycle) => {
     const words = [...cycle.querySelectorAll("span")];
     let index = 0;
