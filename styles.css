@@ -304,85 +304,24 @@ main { overflow: clip; }
 .word-cycle span { grid-area: 1 / 1; opacity: 0; transform: translateY(-8px); transition: opacity 0.4s var(--ease-in-out), transform 0.4s var(--ease-in-out); }
 .word-cycle span.is-visible { opacity: 1; transform: translateY(0); }
 .word-cycle span.is-exiting { opacity: 0; transform: translateY(8px); }
-/* Exploded GPU — animated assemble / explode loop */
-.gpu-scene { display: grid; place-items: center; min-height: 360px; perspective: 1200px; }
-.gpu-explode {
-  position: relative;
-  width: min(300px, 74vw);
-  height: 190px;
-  transform-style: preserve-3d;
-  transform: rotateX(60deg) rotateZ(-32deg);
-  animation: gpu-rotate 24s linear infinite, gpu-enter 1s var(--ease-out-expo) 0.2s both;
+/* Interactive 3D GPU (WebGL / Three.js) */
+.gpu-scene { display: grid; place-items: center; min-height: 460px; }
+.gpu-stage { position: relative; width: min(480px, 100%); aspect-ratio: 1 / 1; cursor: grab; touch-action: pan-y; }
+.gpu-stage.is-grabbed { cursor: grabbing; }
+.gpu-stage canvas { display: block; }
+.gpu-tag {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
+  color: var(--text-primary); white-space: nowrap;
+  padding: 1px 7px; border-left: 2px solid var(--accent);
+  background: rgba(245,245,240,0.62); backdrop-filter: blur(2px);
+  transform: translateX(8px); transition: opacity 0.25s var(--ease-in-out);
 }
-.ex-layer {
-  position: absolute;
-  inset: 0;
-  border-radius: 10px;
-  transform: translateZ(var(--z, 0));
-  backface-visibility: hidden;
+.gpu-hint {
+  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-secondary); opacity: 0.6; pointer-events: none; z-index: 2;
+  transition: opacity 0.4s var(--ease-in-out);
 }
-.ex-pcb {
-  inset: 0;
-  background: linear-gradient(135deg, #0f3d24, #08220f);
-  border: 1px solid rgba(26,158,74,0.45);
-  box-shadow: 0 30px 70px rgba(0,0,0,0.55);
-  animation: ex-pcb 7s var(--ease-in-out) infinite;
-}
-.ex-pcb::after {
-  content: ''; position: absolute; inset: 10px;
-  background:
-    repeating-linear-gradient(90deg, transparent 0 16px, rgba(26,158,74,0.18) 16px 17px),
-    repeating-linear-gradient(0deg, transparent 0 16px, rgba(26,158,74,0.12) 16px 17px);
-  border-radius: 4px;
-}
-.ex-die {
-  inset: 18px;
-  display: grid; place-items: center;
-  background: linear-gradient(135deg, #1a1a22, #0c0c10);
-  border: 1px solid var(--border-dark);
-  animation: ex-die 7s var(--ease-in-out) infinite;
-}
-.ex-die span {
-  width: 96px; height: 96px;
-  background:
-    repeating-linear-gradient(45deg, rgba(26,158,74,0.35) 0 3px, transparent 3px 7px),
-    linear-gradient(135deg, #14141b, #050507);
-  border: 1px solid var(--accent);
-  box-shadow: 0 0 28px var(--accent-glow-strong), inset 0 0 18px rgba(0,0,0,0.7);
-}
-.ex-heatsink {
-  inset: 36px;
-  display: flex; align-items: stretch; justify-content: center; gap: 5px;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(48,48,58,0.95), rgba(22,22,30,0.95));
-  border: 1px solid var(--border-dark);
-  animation: ex-heatsink 7s var(--ease-in-out) infinite;
-}
-.ex-heatsink i { flex: 1; background: linear-gradient(#454552, #21212a); border-radius: 2px; }
-.ex-shroud {
-  inset: 56px;
-  display: flex; align-items: center; justify-content: center; gap: 18px;
-  background: linear-gradient(135deg, #18181f, #0a0a0e);
-  border: 1px solid rgba(26,158,74,0.35);
-  box-shadow: 0 0 24px var(--accent-glow);
-  animation: ex-shroud 7s var(--ease-in-out) infinite;
-}
-.ex-fan {
-  width: 56px; height: 56px; border-radius: 50%;
-  border: 2px solid rgba(26,158,74,0.55);
-  background: conic-gradient(from 0deg, transparent 0 14%, rgba(26,158,74,0.30) 22%, transparent 34% 50%, rgba(26,158,74,0.30) 72%, transparent 84%);
-  animation: ex-fanspin 2.4s linear infinite;
-}
-@keyframes ex-fanspin { to { transform: rotate(360deg); } }
-@keyframes gpu-rotate {
-  from { transform: rotateX(60deg) rotateZ(-32deg); }
-  to   { transform: rotateX(60deg) rotateZ(328deg); }
-}
-@keyframes gpu-enter { from { opacity: 0; } to { opacity: 1; } }
-@keyframes ex-pcb      { 0%,16% { transform: translateZ(0); }     46%,68% { transform: translateZ(-18px); } 100% { transform: translateZ(0); } }
-@keyframes ex-die      { 0%,16% { transform: translateZ(2px); }   46%,68% { transform: translateZ(56px); }  100% { transform: translateZ(2px); } }
-@keyframes ex-heatsink { 0%,16% { transform: translateZ(6px); }   46%,68% { transform: translateZ(132px); } 100% { transform: translateZ(6px); } }
-@keyframes ex-shroud   { 0%,16% { transform: translateZ(12px); }  46%,68% { transform: translateZ(214px); } 100% { transform: translateZ(12px); } }
 .scroll-chevron {
   position: absolute;
   left: 50%;
@@ -698,18 +637,6 @@ main { overflow: clip; }
 .cta-motion img { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: screen; }
 .cta-motion::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 70% at 50% 50%, transparent 0%, var(--bg-dark) 78%); }
 .final-cta > div:not(.cta-motion) { position: relative; z-index: 2; }
-.final-cta .mark {
-  position: absolute;
-  inset: 50% auto auto 50%;
-  transform: translate(-50%, -50%);
-  font-family: var(--font-display);
-  font-size: 600px;
-  color: var(--border-dark);
-  opacity: 0.32;
-  pointer-events: none;
-  user-select: none;
-  line-height: 1;
-}
 .final-cta p { margin: 22px 0 30px; color: var(--text-light-muted); font-size: 18px; }
 
 .page-hero { display: grid; align-items: center; }

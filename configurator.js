@@ -17,7 +17,7 @@ if (configurator) {
     interface: "PCIe"
   };
 
-  const names = { "vera-rubin": "Vera Rubin", blackwell: "Blackwell", "5090ti": "5090Ti" };
+  const names = { "vera-rubin": "Vera Rubin", blackwell: "Vera Rubin Cluster", "5090ti": "Vera Rubin Edge" };
   const memorySteps = [128, 256, 512, 1024];
 
   function renderSpecs() {
@@ -124,7 +124,7 @@ const layerContent = {
   applications: ["Business Applications", "Helios, Aegis, and Nexus sit above the infrastructure. They turn model capacity into workflows for teams that need operational AI systems.", "Helios · Aegis · Nexus"],
   orchestration: ["Titan LLM + Orchestration", "Titan handles model routing, memory management, and cluster policy. It keeps workloads moving across the available compute.", "Titan LLM · Routing policy · Memory manager"],
   software: ["Infrastructure Software", "The infrastructure layer controls scheduling, telemetry, and autoscaling. It is the operational surface for the hardware fleet.", "Fleet control · Telemetry · Autoscaling"],
-  systems: ["Nucore GPU Systems", "Vera Rubin, Blackwell, and the 5090Ti provide the compute base. Each system maps to a different workload profile.", "Vera Rubin · Blackwell · 5090Ti"]
+  systems: ["Nucore GPU Systems", "The Vera Rubin system is the compute base, built on NVIDIA architecture and modified for agentic AI workloads.", "Vera Rubin · Modified NVIDIA base"]
 };
 
 document.querySelectorAll("[data-layer]").forEach((button) => {

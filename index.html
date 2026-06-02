@@ -17,18 +17,15 @@
         <div class="hero-copy">
           <p class="label">Nucore Technologies</p><!-- text-transform:uppercase applied via CSS -->
           <h1 class="display-xl headline-split">AI infrastructure<br>you actually own.</h1>
-          <p>GPU systems, orchestration software, and private compute for AI teams running real workloads.</p>
+          <p>Nucore builds custom high-performance GPUs and the AI software that runs on them. You get roughly twice the performance per dollar of cloud GPUs, deployed on your own hardware with full control of your data.</p>
           <div class="hero-ctas">
             <a class="btn btn--outline" href="products.html">Explore Products</a>
             <a class="btn btn--filled" href="https://calendly.com/nucore">Book a Demo</a>
           </div>
         </div>
-        <div class="gpu-scene" aria-hidden="true">
-          <div class="gpu-explode">
-            <div class="ex-layer ex-pcb"></div>
-            <div class="ex-layer ex-die"><span></span></div>
-            <div class="ex-layer ex-heatsink"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-            <div class="ex-layer ex-shroud"><span class="ex-fan"></span><span class="ex-fan"></span></div>
+        <div class="gpu-scene">
+          <div class="gpu-stage" id="gpuStage" role="img" aria-label="Interactive 3D exploded view of a Nucore GPU. Drag to rotate.">
+            <span class="gpu-hint">drag to rotate</span>
           </div>
         </div>
       </div>
@@ -49,11 +46,11 @@
           <!-- Panel 1: Hardware -->
           <div class="ov-panel ov-panel-hw is-active">
             <div class="ov-hw-wrap">
-              <div class="ov-hw-label">● Nucore GPU Hardware</div>
-              <div class="ov-hw-slot"><span>H100×8</span><div class="ov-hw-bar"><i style="--w:85%"></i></div><span class="ov-hw-pct">85%</span></div>
-              <div class="ov-hw-slot"><span>B200×4</span><div class="ov-hw-bar"><i style="--w:72%"></i></div><span class="ov-hw-pct">72%</span></div>
-              <div class="ov-hw-slot"><span>5090Ti</span><div class="ov-hw-bar"><i style="--w:63%"></i></div><span class="ov-hw-pct">63%</span></div>
-              <div class="ov-hw-slot"><span>5090Ti</span><div class="ov-hw-bar"><i style="--w:91%"></i></div><span class="ov-hw-pct">91%</span></div>
+              <div class="ov-hw-label">● Vera Rubin Cluster</div>
+              <div class="ov-hw-slot"><span>Rubin-01</span><div class="ov-hw-bar"><i style="--w:85%"></i></div><span class="ov-hw-pct">85%</span></div>
+              <div class="ov-hw-slot"><span>Rubin-02</span><div class="ov-hw-bar"><i style="--w:72%"></i></div><span class="ov-hw-pct">72%</span></div>
+              <div class="ov-hw-slot"><span>Rubin-03</span><div class="ov-hw-bar"><i style="--w:63%"></i></div><span class="ov-hw-pct">63%</span></div>
+              <div class="ov-hw-slot"><span>Rubin-04</span><div class="ov-hw-bar"><i style="--w:91%"></i></div><span class="ov-hw-pct">91%</span></div>
               <div class="ov-hw-chip"></div>
             </div>
           </div>
@@ -153,29 +150,29 @@
         <div class="overview-items">
           <article class="overview-item" data-visual="hw" data-reveal>
             <span class="num">01</span>
-            <h3>Custom GPU Systems</h3>
+            <h3>Custom GPU Hardware</h3>
             <ul class="list-reveal">
-              <li>Three compute units for different workloads —</li>
-              <li>Vera Rubin, Blackwell, and the 5090Ti.</li>
+              <li>The Vera Rubin system runs training, inference, and multi-agent workloads.</li>
+              <li>Modified NVIDIA hardware tuned for about 2x throughput per dollar.</li>
             </ul>
             <a class="text-link" href="products.html">→ View Products</a>
           </article>
           <span class="draw-line"></span>
           <article class="overview-item" data-visual="sw" data-reveal data-delay="0.1">
             <span class="num">02</span>
-            <h3>Infrastructure Software</h3>
+            <h3>Software Suite</h3>
             <ul class="list-reveal">
-              <li>Fleet control, scheduling, telemetry, autoscaling.</li>
-              <li>The operational layer above the hardware.</li>
+              <li>Train, fine-tune, and orchestrate models without a deep MLOps team.</li>
+              <li>Billed on compute hours, priced 40 to 60 percent below cloud training.</li>
             </ul>
           </article>
           <span class="draw-line"></span>
           <article class="overview-item" data-visual="ml" data-reveal data-delay="0.2">
             <span class="num">03</span>
-            <h3>Titan LLM + Orchestration</h3>
+            <h3>Titan LLM</h3>
             <ul class="list-reveal">
-              <li>Model routing, memory management, compute distribution.</li>
-              <li>One control plane across your entire cluster.</li>
+              <li>Language models tuned for Nucore GPU architecture.</li>
+              <li>Higher throughput and lower latency than general-purpose models on commodity GPUs.</li>
             </ul>
           </article>
         </div>
@@ -195,7 +192,7 @@
           <line x1="36" y1="17" x2="40" y2="25" stroke="#1a9e4a" stroke-width="1.5"/>
           <line x1="36" y1="39" x2="40" y2="25" stroke="#1a9e4a" stroke-width="1.5"/>
         </svg>
-        <div><h3>Agentic pipelines</h3><p>Coordinate accelerator capacity around persistent workloads — not static server reservations.</p></div>
+        <div><h3>Agentic pipelines</h3><p>Run multi-agent systems that need memory persistence, recursive reasoning, and real-time orchestration.</p></div>
         <a href="products.html#vera-rubin">Learn More →</a>
       </article>
       <span class="draw-line"></span>
@@ -211,7 +208,7 @@
           <line x1="13" y1="39" x2="21" y2="33" stroke="#1a9e4a" stroke-width="1.5"/>
           <line x1="43" y1="39" x2="35" y2="33" stroke="#1a9e4a" stroke-width="1.5"/>
         </svg>
-        <div><h3>Distributed inference</h3><p>Route models, memory, and compute across clusters with visibility into every decision.</p></div>
+        <div><h3>Continuous inference</h3><p>Serve large-scale inference around the clock without the latency walls and cost spikes of cloud GPU rental.</p></div>
         <a href="design.html">Learn More →</a>
       </article>
       <span class="draw-line"></span>
@@ -221,7 +218,7 @@
           <path d="M20 26V20a8 8 0 0 1 16 0v6" stroke="#1a9e4a" stroke-width="1.5" stroke-linecap="round"/>
           <circle cx="28" cy="36" r="3" fill="#1a9e4a"/>
         </svg>
-        <div><h3>Private AI operations</h3><p>Enterprise teams building autonomous systems need infrastructure they control end to end.</p></div>
+        <div><h3>Private deployment</h3><p>Run on-premise or in a dedicated environment and keep full sovereignty over your data and models.</p></div>
         <a href="contact.html">Learn More →</a>
       </article>
       <span class="draw-line"></span>
@@ -233,10 +230,10 @@
         <h2 class="display-lg headline-split" data-reveal data-delay="0.15">From the chip to the orchestration layer.</h2>
       </div>
       <div class="stack-bars">
-        <div class="stack-bar" data-delay="0.36"><span class="num">04</span><div><strong>Business Applications</strong><p>Helios, Aegis, Nexus</p></div><span class="arrow">→</span></div>
-        <div class="stack-bar" data-delay="0.24"><span class="num">03</span><div><strong>Titan LLM + Orchestration</strong><p>Model routing, memory, cluster policy</p></div><span class="arrow">→</span></div>
-        <div class="stack-bar" data-delay="0.12"><span class="num">02</span><div><strong>Infrastructure Software</strong><p>Scheduling, telemetry, autoscaling</p></div><span class="arrow">→</span></div>
-        <div class="stack-bar stack-bar--glow"><span class="num">01</span><div><strong>Nucore GPU Systems</strong><p>Vera Rubin · Blackwell · 5090Ti</p></div><span class="arrow">→</span></div>
+        <div class="stack-bar" data-delay="0.36"><span class="num">04</span><div><strong>Applications and IaaS</strong><p>No-code AI builder and white-label platforms (roadmap)</p></div><span class="arrow">→</span></div>
+        <div class="stack-bar" data-delay="0.24"><span class="num">03</span><div><strong>Titan LLM</strong><p>Tuned for Nucore hardware</p></div><span class="arrow">→</span></div>
+        <div class="stack-bar" data-delay="0.12"><span class="num">02</span><div><strong>Software Suite</strong><p>Training, fine-tuning, usage-based billing</p></div><span class="arrow">→</span></div>
+        <div class="stack-bar stack-bar--glow"><span class="num">01</span><div><strong>Nucore GPU Systems</strong><p>Vera Rubin, modified for agentic AI</p></div><span class="arrow">→</span></div>
       </div>
     </section>
 
@@ -244,27 +241,30 @@
       <div class="wrap">
         <h2 class="display-lg" data-reveal>What we're working on.</h2>
         <div class="research-grid">
-          <article class="research-card" data-reveal data-delay="0.1"><span class="tag">RESEARCH</span><h3>Reasoning-aware scheduling for long-running autonomous agents</h3><a href="research.html">Read →</a></article>
-          <article class="research-card" data-reveal data-delay="0.25"><span class="tag tag--neutral">GENERAL</span><h3>Why distributed inference needs a dedicated compute fabric</h3><a href="research.html">Read →</a></article>
+          <article class="research-card" data-reveal data-delay="0.1"><span class="tag">RESEARCH</span><h3>Benchmarking modified GPUs against NVIDIA H100 and cloud instances on agentic workloads</h3><a href="research.html">Read →</a></article>
+          <article class="research-card" data-reveal data-delay="0.25"><span class="tag tag--neutral">GENERAL</span><h3>Why agentic AI needs hardware and software designed together</h3><a href="research.html">Read →</a></article>
         </div>
       </div>
     </section>
 
     <section class="section section-dark section--snap final-cta center">
       <div class="cta-motion" aria-hidden="true"><img src="assets/futuristic-grid.gif" alt=""></div>
-      <span class="mark">N</span>
       <div>
         <h2 class="display-xl headline-split">Ready to build?</h2>
-        <p data-reveal data-delay="0.3">Book a call. We'll show you what's possible.</p>
+        <p data-reveal data-delay="0.3">Book a demo and run your own workload on Nucore hardware.</p>
         <a class="btn btn--filled btn--large" data-reveal data-delay="0.45" href="https://calendly.com/nucore">Book a Demo</a>
       </div>
     </section>
 
   </main>
   <footer class="site-footer">
-    <div class="footer-grid"><div><h3>Products</h3><a href="products.html#vera-rubin">Vera Rubin</a><a href="products.html#blackwell">Blackwell</a><a href="products.html#5090ti">5090Ti</a></div><div><h3>Company</h3><a href="contact.html">Contact</a></div><div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div><div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div></div>
+    <div class="footer-grid"><div><h3>Products</h3><a href="products.html#vera-rubin">Vera Rubin</a><a href="products.html#software">Software Suite</a><a href="products.html#platform">Platform</a></div><div><h3>Company</h3><a href="contact.html">Contact</a></div><div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div><div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div></div>
     <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
   </footer>
   <script src="nav.js"></script><script src="scroll.js"></script>
+  <script type="importmap">
+  {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
+  <script type="module" src="gpu3d.js"></script>
 </body>
 </html>
