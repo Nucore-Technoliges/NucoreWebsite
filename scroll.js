@@ -120,6 +120,29 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", (event) => event.preventDefault());
   });
 
+  // Scroll-driven motion for feature panels (Rubin / Orion / Titan)
+  const fpPanels = [...document.querySelectorAll("[data-fp]")];
+  if (fpPanels.length) {
+    let fpTicking = false;
+    const updateFp = () => {
+      const vh = window.innerHeight || 1;
+      fpPanels.forEach((panel) => {
+        const rect = panel.getBoundingClientRect();
+        // progress 0 when panel top is below viewport, 1 when panel bottom is above viewport
+        const raw = 1 - (rect.top + rect.height * 0.4) / vh;
+        const p = Math.max(0, Math.min(1, raw));
+        panel.style.setProperty("--fp-progress", p.toFixed(3));
+      });
+      fpTicking = false;
+    };
+    const onScrollFp = () => {
+      if (!fpTicking) { window.requestAnimationFrame(updateFp); fpTicking = true; }
+    };
+    window.addEventListener("scroll", onScrollFp, { passive: true });
+    window.addEventListener("resize", onScrollFp);
+    updateFp();
+  }
+
   document.querySelectorAll(".anchor-pills a").forEach((anchor) => {
     anchor.addEventListener("click", () => {
       document.querySelectorAll(".anchor-pills a").forEach((a) => a.classList.remove("is-active"));

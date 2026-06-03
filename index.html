@@ -39,143 +39,262 @@
       </h2>
     </section>
 
-    <!-- Scroll-linked 3-panel overview -->
-    <section class="section overview-scroll">
-      <div class="overview-track wrap">
-        <div class="overview-visual-sticky" aria-hidden="true">
-          <!-- Panel 1: Hardware -->
-          <div class="ov-panel ov-panel-hw is-active">
-            <div class="ov-hw-wrap">
-              <div class="ov-hw-label">● Vera Rubin Cluster</div>
-              <div class="ov-hw-slot"><span>Rubin-01</span><div class="ov-hw-bar"><i style="--w:85%"></i></div><span class="ov-hw-pct">85%</span></div>
-              <div class="ov-hw-slot"><span>Rubin-02</span><div class="ov-hw-bar"><i style="--w:72%"></i></div><span class="ov-hw-pct">72%</span></div>
-              <div class="ov-hw-slot"><span>Rubin-03</span><div class="ov-hw-bar"><i style="--w:63%"></i></div><span class="ov-hw-pct">63%</span></div>
-              <div class="ov-hw-slot"><span>Rubin-04</span><div class="ov-hw-bar"><i style="--w:91%"></i></div><span class="ov-hw-pct">91%</span></div>
-              <div class="ov-hw-chip"></div>
-            </div>
+    <!-- Full-viewport tech panel 1: Vera Rubin (silicon) -->
+    <!-- REMOVED: Product feature panels (Rubin / Orion / Titan) live on Products tab now -->
+    <section class="section section--snap feature-panel feature-panel--rubin" data-fp data-theme="rubin" hidden style="display:none">
+      <div class="fp-bg" aria-hidden="true">
+        <div class="fp-grid"></div>
+        <div class="fp-art">
+          <svg class="fp-chip" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="rubinCore" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#1a9e4a" stop-opacity="0.7"/>
+                <stop offset="100%" stop-color="#1a9e4a" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect x="60" y="60" width="280" height="280" rx="14" fill="none" stroke="rgba(26,158,74,0.5)" stroke-width="1.2"/>
+            <rect x="80" y="80" width="240" height="240" rx="10" fill="none" stroke="rgba(26,158,74,0.22)" stroke-width="0.8"/>
+            <g stroke="rgba(26,158,74,0.18)" stroke-width="0.6">
+              <line x1="60" y1="140" x2="340" y2="140"/>
+              <line x1="60" y1="200" x2="340" y2="200"/>
+              <line x1="60" y1="260" x2="340" y2="260"/>
+              <line x1="140" y1="60" x2="140" y2="340"/>
+              <line x1="200" y1="60" x2="200" y2="340"/>
+              <line x1="260" y1="60" x2="260" y2="340"/>
+            </g>
+            <g fill="rgba(26,158,74,0.08)" stroke="rgba(26,158,74,0.5)" stroke-width="0.8">
+              <rect x="32" y="130" width="20" height="60" rx="3"/>
+              <rect x="32" y="210" width="20" height="60" rx="3"/>
+              <rect x="348" y="130" width="20" height="60" rx="3"/>
+              <rect x="348" y="210" width="20" height="60" rx="3"/>
+            </g>
+            <g fill="#0c0c10" stroke="rgba(26,158,74,0.55)" stroke-width="0.9">
+              <rect x="110" y="110" width="26" height="26" rx="3"/>
+              <rect x="160" y="110" width="26" height="26" rx="3" stroke="#1a9e4a"/>
+              <rect x="210" y="110" width="26" height="26" rx="3"/>
+              <rect x="260" y="110" width="26" height="26" rx="3"/>
+              <rect x="110" y="160" width="26" height="26" rx="3" stroke="#1a9e4a"/>
+              <rect x="160" y="160" width="26" height="26" rx="3" fill="#13131a" stroke="#5ee08e" stroke-width="1.4"/>
+              <rect x="210" y="160" width="26" height="26" rx="3" fill="#13131a" stroke="#5ee08e" stroke-width="1.4"/>
+              <rect x="260" y="160" width="26" height="26" rx="3" stroke="#1a9e4a"/>
+              <rect x="110" y="210" width="26" height="26" rx="3"/>
+              <rect x="160" y="210" width="26" height="26" rx="3" fill="#13131a" stroke="#5ee08e" stroke-width="1.4"/>
+              <rect x="210" y="210" width="26" height="26" rx="3" fill="#13131a" stroke="#5ee08e" stroke-width="1.4"/>
+              <rect x="260" y="210" width="26" height="26" rx="3" stroke="#1a9e4a"/>
+              <rect x="110" y="260" width="26" height="26" rx="3"/>
+              <rect x="160" y="260" width="26" height="26" rx="3" stroke="#1a9e4a"/>
+              <rect x="210" y="260" width="26" height="26" rx="3"/>
+              <rect x="260" y="260" width="26" height="26" rx="3"/>
+            </g>
+            <circle cx="200" cy="200" r="90" fill="url(#rubinCore)" class="fp-pulse"/>
+            <text x="200" y="204" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#5ee08e" letter-spacing="3" font-weight="600">VERA RUBIN</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="fp-content wrap">
+        <div class="fp-tag">01 · Custom Silicon</div>
+        <h2 class="fp-title display-xl headline-split">Nucore Vera Rubin</h2>
+        <p class="fp-lede">Custom GPU silicon engineered from the die up for agentic AI. Modified tensor cores, expanded HBM3e, re-architected NVLink — built for the workloads that break commodity hardware.</p>
+
+        <div class="fp-uses">
+          <div class="fp-use">
+            <span class="fp-use-num">→</span>
+            <h4>Foundation-model training</h4>
+            <p>Train 70B–400B parameter models on-prem. Expanded HBM holds 4x the gradient state of an H100.</p>
           </div>
-          <!-- Panel 2: Software -->
-          <div class="ov-panel ov-panel-sw">
-            <div class="ov-sw-wrap">
-              <div class="ov-sw-topbar">
-                <span class="ov-sw-dot"></span><span class="ov-sw-dot"></span><span class="ov-sw-dot"></span>
-                <span class="ov-sw-title">Infrastructure Control Plane</span>
-              </div>
-              <div class="ov-sw-body">
-                <div class="ov-sw-line"><span class="ov-sw-icon">⬡</span><span class="ov-sw-key">Scheduler</span><span class="ov-sw-val">Active · 14 jobs</span></div>
-                <div class="ov-sw-line"><span class="ov-sw-icon">↑</span><span class="ov-sw-key">Telemetry</span><span class="ov-sw-val">38ms avg</span></div>
-                <div class="ov-sw-line"><span class="ov-sw-icon">⟳</span><span class="ov-sw-key">Autoscale</span><span class="ov-sw-val" style="color:var(--accent)">ON</span></div>
-                <div class="ov-sw-line"><span class="ov-sw-icon">▦</span><span class="ov-sw-key">Fleet</span><span class="ov-sw-val">8 nodes</span></div>
-                <div class="ov-sw-nodes">
-                  <div class="ov-sw-node active">N01</div>
-                  <div class="ov-sw-node active">N02</div>
-                  <div class="ov-sw-node">N03</div>
-                  <div class="ov-sw-node active">N04</div>
-                  <div class="ov-sw-node">N05</div>
-                  <div class="ov-sw-node active">N06</div>
-                  <div class="ov-sw-node active">N07</div>
-                  <div class="ov-sw-node">N08</div>
-                </div>
-              </div>
-            </div>
+          <div class="fp-use">
+            <span class="fp-use-num">→</span>
+            <h4>Continuous agentic inference</h4>
+            <p>Sub-12ms TTFT at 1k concurrent sessions. Long-horizon agent memory stays hot in cache.</p>
           </div>
-          <!-- Panel 3: Model / LLM -->
-          <div class="ov-panel ov-panel-ml">
-            <div class="ov-ml-wrap">
-              <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Input layer -->
-                <circle cx="40" cy="80" r="12" fill="#0c0c10" stroke="#1a9e4a" stroke-width="1.5"/>
-                <circle cx="40" cy="150" r="12" fill="#0c0c10" stroke="#1a9e4a" stroke-width="1.5"/>
-                <circle cx="40" cy="220" r="12" fill="#0c0c10" stroke="#1a9e4a" stroke-width="1.5"/>
-                <!-- Hidden layer 1 -->
-                <circle cx="120" cy="55" r="12" fill="#0c0c10" stroke="rgba(26,158,74,0.5)" stroke-width="1.5"/>
-                <circle cx="120" cy="110" r="12" fill="#0c0c10" stroke="rgba(26,158,74,0.5)" stroke-width="1.5"/>
-                <circle cx="120" cy="165" r="12" fill="#0c0c10" stroke="rgba(26,158,74,0.5)" stroke-width="1.5"/>
-                <circle cx="120" cy="220" r="12" fill="#0c0c10" stroke="rgba(26,158,74,0.5)" stroke-width="1.5"/>
-                <circle cx="120" cy="245" r="12" fill="#0c0c10" stroke="rgba(26,158,74,0.5)" stroke-width="1.5"/>
-                <!-- Hidden layer 2 -->
-                <circle cx="200" cy="80" r="12" fill="#0c0c10" stroke="rgba(26,158,74,0.5)" stroke-width="1.5"/>
-                <circle cx="200" cy="150" r="12" fill="#13131a" stroke="#1a9e4a" stroke-width="2">
-                  <animate attributeName="r" values="12;14;12" dur="2s" repeatCount="indefinite"/>
-                  <animate attributeName="stroke-opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="200" cy="220" r="12" fill="#0c0c10" stroke="rgba(26,158,74,0.5)" stroke-width="1.5"/>
-                <!-- Output layer -->
-                <circle cx="270" cy="110" r="14" fill="#13131a" stroke="#1a9e4a" stroke-width="2">
-                  <animate attributeName="stroke-opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="270" cy="190" r="14" fill="#0c0c10" stroke="rgba(26,158,74,0.35)" stroke-width="1.5"/>
-                <!-- Connections input → h1 -->
-                <line x1="52" y1="80" x2="108" y2="55" stroke="rgba(26,158,74,0.18)" stroke-width="1"/>
-                <line x1="52" y1="80" x2="108" y2="110" stroke="rgba(26,158,74,0.25)" stroke-width="1"/>
-                <line x1="52" y1="80" x2="108" y2="165" stroke="rgba(26,158,74,0.12)" stroke-width="1"/>
-                <line x1="52" y1="150" x2="108" y2="110" stroke="rgba(26,158,74,0.22)" stroke-width="1"/>
-                <line x1="52" y1="150" x2="108" y2="165" stroke="rgba(26,158,74,0.28)" stroke-width="1"/>
-                <line x1="52" y1="150" x2="108" y2="220" stroke="rgba(26,158,74,0.14)" stroke-width="1"/>
-                <line x1="52" y1="220" x2="108" y2="165" stroke="rgba(26,158,74,0.18)" stroke-width="1"/>
-                <line x1="52" y1="220" x2="108" y2="220" stroke="rgba(26,158,74,0.25)" stroke-width="1"/>
-                <line x1="52" y1="220" x2="108" y2="245" stroke="rgba(26,158,74,0.18)" stroke-width="1"/>
-                <!-- Connections h1 → h2 -->
-                <line x1="132" y1="55" x2="188" y2="80" stroke="rgba(26,158,74,0.2)" stroke-width="1"/>
-                <line x1="132" y1="110" x2="188" y2="80" stroke="rgba(26,158,74,0.3)" stroke-width="1.5"/>
-                <line x1="132" y1="110" x2="188" y2="150" stroke="rgba(26,158,74,0.35)" stroke-width="1.5"/>
-                <line x1="132" y1="165" x2="188" y2="150" stroke="rgba(26,158,74,0.4)" stroke-width="2"/>
-                <line x1="132" y1="220" x2="188" y2="220" stroke="rgba(26,158,74,0.22)" stroke-width="1"/>
-                <line x1="132" y1="245" x2="188" y2="220" stroke="rgba(26,158,74,0.18)" stroke-width="1"/>
-                <!-- Connections h2 → output -->
-                <line x1="212" y1="80" x2="256" y2="110" stroke="rgba(26,158,74,0.3)" stroke-width="1.5"/>
-                <line x1="212" y1="150" x2="256" y2="110" stroke="rgba(26,158,74,0.5)" stroke-width="2"/>
-                <line x1="212" y1="150" x2="256" y2="190" stroke="rgba(26,158,74,0.22)" stroke-width="1"/>
-                <line x1="212" y1="220" x2="256" y2="190" stroke="rgba(26,158,74,0.2)" stroke-width="1"/>
-                <!-- Glowing active path -->
-                <line x1="52" y1="150" x2="108" y2="165" stroke="#1a9e4a" stroke-width="2" opacity="0.7">
-                  <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2s" repeatCount="indefinite"/>
-                </line>
-                <line x1="132" y1="165" x2="188" y2="150" stroke="#1a9e4a" stroke-width="2.5" opacity="0.8">
-                  <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2s" repeatCount="indefinite"/>
-                </line>
-                <line x1="212" y1="150" x2="256" y2="110" stroke="#1a9e4a" stroke-width="2.5" opacity="0.9">
-                  <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2s" repeatCount="indefinite"/>
-                </line>
-                <!-- Labels -->
-                <text x="40" y="272" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(240,240,236,0.35)">Input</text>
-                <text x="120" y="272" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(240,240,236,0.35)">Hidden</text>
-                <text x="200" y="272" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(240,240,236,0.35)">Attn</text>
-                <text x="270" y="272" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="rgba(26,158,74,0.7)">Out</text>
-              </svg>
-            </div>
+          <div class="fp-use">
+            <span class="fp-use-num">→</span>
+            <h4>Sovereign deploy</h4>
+            <p>Sealed racks for classified, ITAR, and PHI environments. No phone-home, no shared tenancy.</p>
           </div>
         </div>
 
-        <div class="overview-items">
-          <article class="overview-item" data-visual="hw" data-reveal>
-            <span class="num">01</span>
-            <h3>Custom GPU Hardware</h3>
-            <ul class="list-reveal">
-              <li>The Vera Rubin system runs training, inference, and multi-agent workloads.</li>
-              <li>Modified NVIDIA hardware tuned for about 2x throughput per dollar.</li>
-            </ul>
-            <a class="text-link" href="products.html">→ View Products</a>
-          </article>
-          <span class="draw-line"></span>
-          <article class="overview-item" data-visual="sw" data-reveal data-delay="0.1">
-            <span class="num">02</span>
-            <h3>Software Suite</h3>
-            <ul class="list-reveal">
-              <li>Train, fine-tune, and orchestrate models without a deep MLOps team.</li>
-              <li>Billed on compute hours, priced 40 to 60 percent below cloud training.</li>
-            </ul>
-          </article>
-          <span class="draw-line"></span>
-          <article class="overview-item" data-visual="ml" data-reveal data-delay="0.2">
-            <span class="num">03</span>
-            <h3>Titan LLM</h3>
-            <ul class="list-reveal">
-              <li>Language models tuned for Nucore GPU architecture.</li>
-              <li>Higher throughput and lower latency than general-purpose models on commodity GPUs.</li>
-            </ul>
-          </article>
+        <div class="fp-specs">
+          <div class="fp-spec"><span class="fp-spec-num count-up">2840</span><p>tok/s sustained</p></div>
+          <div class="fp-spec"><span class="fp-spec-num count-up">192</span><span class="fp-spec-prefix">GB</span><p>HBM3e</p></div>
+          <div class="fp-spec"><span class="fp-spec-num count-up">900</span><span class="fp-spec-prefix">GB/s</span><p>NVLink fabric</p></div>
+          <div class="fp-spec"><span class="fp-spec-prefix">$</span><span class="fp-spec-num count-up">40</span><span class="fp-spec-prefix">K</span><p>per unit, owned</p></div>
         </div>
+
+        <a class="text-link" href="products.html#vera-rubin">→ View product specs</a>
+      </div>
+    </section>
+
+    <!-- Full-viewport tech panel 2: Orion Model Engine -->
+    <section class="section section--snap feature-panel feature-panel--orion" data-fp data-theme="orion" hidden style="display:none">
+      <div class="fp-bg" aria-hidden="true">
+        <div class="fp-codewall"></div>
+        <div class="fp-art fp-art--wide">
+          <svg class="fp-pipeline" viewBox="0 0 600 240" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="orionFlow" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#1a9e4a" stop-opacity="0"/>
+                <stop offset="50%" stop-color="#5ee08e" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#1a9e4a" stop-opacity="0"/>
+              </linearGradient>
+              <radialGradient id="orionNode" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#1a9e4a" stop-opacity="0.75"/>
+                <stop offset="100%" stop-color="#0c0c10" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <g stroke="rgba(26,158,74,0.18)" stroke-width="0.8" fill="none">
+              <path d="M60 80 C 140 80, 160 50, 230 50"/>
+              <path d="M60 80 C 140 80, 160 110, 230 110"/>
+              <path d="M230 50 C 280 50, 290 120, 320 120"/>
+              <path d="M230 110 C 280 110, 290 120, 320 120"/>
+              <path d="M60 160 C 140 160, 160 190, 230 190"/>
+              <path d="M230 190 C 280 190, 290 120, 320 120"/>
+              <path d="M380 120 C 430 120, 450 80, 540 80"/>
+              <path d="M380 120 C 430 120, 450 160, 540 160"/>
+            </g>
+            <line x1="92" y1="120" x2="148" y2="120" stroke="url(#orionFlow)" stroke-width="1.8"/>
+            <line x1="208" y1="120" x2="288" y2="120" stroke="url(#orionFlow)" stroke-width="1.8"/>
+            <line x1="352" y1="120" x2="428" y2="120" stroke="url(#orionFlow)" stroke-width="1.8"/>
+            <line x1="492" y1="120" x2="548" y2="120" stroke="url(#orionFlow)" stroke-width="1.8"/>
+            <g>
+              <circle cx="60" cy="120" r="28" fill="url(#orionNode)" stroke="#1a9e4a" stroke-width="1.2"/>
+              <circle cx="180" cy="120" r="28" fill="url(#orionNode)" stroke="#1a9e4a" stroke-width="1.2"/>
+              <circle cx="320" cy="120" r="36" fill="url(#orionNode)" stroke="#5ee08e" stroke-width="1.6" class="fp-pulse"/>
+              <circle cx="460" cy="120" r="28" fill="url(#orionNode)" stroke="#1a9e4a" stroke-width="1.2"/>
+              <circle cx="568" cy="120" r="28" fill="url(#orionNode)" stroke="#1a9e4a" stroke-width="1.2"/>
+            </g>
+            <g font-family="JetBrains Mono" font-size="8" fill="rgba(240,240,236,0.6)" text-anchor="middle">
+              <text x="60" y="123">INGEST</text>
+              <text x="180" y="123">EMBED</text>
+              <text x="320" y="123" fill="#5ee08e" font-weight="600">TRAIN</text>
+              <text x="460" y="123">EVAL</text>
+              <text x="568" y="123">DEPLOY</text>
+            </g>
+            <g class="fp-stream">
+              <circle cx="60" cy="120" r="3" fill="#5ee08e"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="fp-content wrap">
+        <div class="fp-tag">02 · Software Suite</div>
+        <h2 class="fp-title display-xl headline-split">Orion Model Engine</h2>
+        <p class="fp-lede">The end-to-end model lifecycle for Vera Rubin. Ingest, fine-tune, evaluate, deploy — one pane of glass, one silicon stack.</p>
+
+        <div class="fp-uses">
+          <div class="fp-use">
+            <span class="fp-use-num">→</span>
+            <h4>Dataset curation &amp; lineage</h4>
+            <p>Sovereign data plane with versioning and PII filtering. Every weight traces back to its training snapshot.</p>
+          </div>
+          <div class="fp-use">
+            <span class="fp-use-num">→</span>
+            <h4>Full fine-tuning catalog</h4>
+            <p>LoRA, SFT, RLHF, DPO — all first-class. Domain recipes for finance, defense, biotech, and code.</p>
+          </div>
+          <div class="fp-use">
+            <span class="fp-use-num">→</span>
+            <h4>One-click deploy to Titan</h4>
+            <p>Promote a checkpoint to canary or full rollout in one command. Orion handles sharding and KV warmup.</p>
+          </div>
+        </div>
+
+        <div class="fp-specs">
+          <div class="fp-spec"><span class="fp-spec-num count-up">14</span><p>parallel jobs / rack</p></div>
+          <div class="fp-spec"><span class="fp-spec-num count-up">96</span><span class="fp-spec-prefix">%</span><p>silicon utilization</p></div>
+          <div class="fp-spec"><span class="fp-spec-num count-up">38</span><span class="fp-spec-prefix">ms</span><p>scheduler latency</p></div>
+          <div class="fp-spec"><span class="fp-spec-num count-up">60</span><span class="fp-spec-prefix">%</span><p>below cloud training</p></div>
+        </div>
+
+        <a class="text-link" href="products.html#orion">→ Explore Orion</a>
+      </div>
+    </section>
+
+    <!-- Full-viewport tech panel 3: Titan LLM -->
+    <section class="section section--snap feature-panel feature-panel--titan" data-fp data-theme="titan" hidden style="display:none">
+      <div class="fp-bg" aria-hidden="true">
+        <div class="fp-stars"></div>
+        <div class="fp-art">
+          <svg class="fp-neural" viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="titanGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#5ee08e" stop-opacity="0.45"/>
+                <stop offset="100%" stop-color="#0c0c10" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="240" cy="180" r="150" fill="url(#titanGlow)" class="fp-pulse"/>
+            <g stroke="rgba(26,158,74,0.16)" stroke-width="0.6">
+              <line x1="60" y1="120" x2="180" y2="100"/><line x1="60" y1="120" x2="180" y2="180"/><line x1="60" y1="120" x2="180" y2="260"/>
+              <line x1="60" y1="180" x2="180" y2="100"/><line x1="60" y1="180" x2="180" y2="180"/><line x1="60" y1="180" x2="180" y2="260"/>
+              <line x1="60" y1="240" x2="180" y2="180"/><line x1="60" y1="240" x2="180" y2="260"/>
+              <line x1="180" y1="100" x2="300" y2="120"/><line x1="180" y1="100" x2="300" y2="180"/>
+              <line x1="180" y1="180" x2="300" y2="120"/><line x1="180" y1="180" x2="300" y2="180"/><line x1="180" y1="180" x2="300" y2="240"/>
+              <line x1="180" y1="260" x2="300" y2="180"/><line x1="180" y1="260" x2="300" y2="240"/>
+              <line x1="300" y1="120" x2="420" y2="140"/><line x1="300" y1="120" x2="420" y2="220"/>
+              <line x1="300" y1="180" x2="420" y2="140"/><line x1="300" y1="180" x2="420" y2="220"/>
+              <line x1="300" y1="240" x2="420" y2="220"/>
+            </g>
+            <g stroke="#5ee08e" stroke-width="1.4" opacity="0.85" class="fp-active-path">
+              <line x1="60" y1="180" x2="180" y2="180"/>
+              <line x1="180" y1="180" x2="300" y2="180"/>
+              <line x1="300" y1="180" x2="420" y2="140"/>
+            </g>
+            <g fill="#0c0c10" stroke="#1a9e4a" stroke-width="1">
+              <circle cx="60" cy="120" r="8"/>
+              <circle cx="60" cy="180" r="9" stroke="#5ee08e" stroke-width="1.4"/>
+              <circle cx="60" cy="240" r="8"/>
+              <circle cx="180" cy="100" r="8"/>
+              <circle cx="180" cy="180" r="10" fill="#13131a" stroke="#5ee08e" stroke-width="1.6"/>
+              <circle cx="180" cy="260" r="8"/>
+              <circle cx="300" cy="120" r="8"/>
+              <circle cx="300" cy="180" r="11" fill="#13131a" stroke="#5ee08e" stroke-width="1.8" class="fp-pulse"/>
+              <circle cx="300" cy="240" r="8"/>
+              <circle cx="420" cy="140" r="10" fill="#13131a" stroke="#5ee08e" stroke-width="1.6"/>
+              <circle cx="420" cy="220" r="10" fill="#13131a" stroke="#5ee08e" stroke-width="1.6"/>
+            </g>
+            <g font-family="JetBrains Mono" font-size="8" fill="rgba(240,240,236,0.45)" text-anchor="middle">
+              <text x="60" y="306">Embed</text>
+              <text x="180" y="306">Attn</text>
+              <text x="300" y="306">FF</text>
+              <text x="420" y="306" fill="#5ee08e">Logits</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="fp-content wrap">
+        <div class="fp-tag">03 · Model</div>
+        <h2 class="fp-title display-xl headline-split">Titan LLM</h2>
+        <p class="fp-lede">A family of frontier language models tuned weight-by-weight to Nucore silicon. Higher throughput, lower latency, longer context — because they were never general-purpose.</p>
+
+        <div class="fp-uses">
+          <div class="fp-use">
+            <span class="fp-use-num">→</span>
+            <h4>Agentic reasoning</h4>
+            <p>Persistent memory and recursive planning are first-class. Long-horizon agents stay coherent across thousands of turns.</p>
+          </div>
+          <div class="fp-use">
+            <span class="fp-use-num">→</span>
+            <h4>Low-latency signals</h4>
+            <p>Sub-50µs inference for HFT signal models. Co-located deploy means no cloud round-trip on the critical path.</p>
+          </div>
+          <div class="fp-use">
+            <span class="fp-use-num">→</span>
+            <h4>Domain copilots</h4>
+            <p>Pre-tuned variants for finance, defense, biotech, legal, code — already speaking your jargon and compliance rules.</p>
+          </div>
+        </div>
+
+        <div class="fp-specs">
+          <div class="fp-spec"><span class="fp-spec-num count-up">405</span><span class="fp-spec-prefix">B</span><p>parameters, flagship</p></div>
+          <div class="fp-spec"><span class="fp-spec-num count-up">1024</span><span class="fp-spec-prefix">K</span><p>context window</p></div>
+          <div class="fp-spec"><span class="fp-spec-num count-up">12</span><span class="fp-spec-prefix">ms</span><p>first-token latency</p></div>
+          <div class="fp-spec"><span class="fp-spec-num count-up">2840</span><p>tok/s sustained</p></div>
+        </div>
+
+        <a class="text-link" href="products.html#titan">→ Explore Titan</a>
       </div>
     </section>
 
@@ -224,16 +343,300 @@
       <span class="draw-line"></span>
     </section>
 
-    <section class="section section-dark section--snap platform-stack">
-      <div class="platform-intro">
-        <p class="label" data-reveal data-delay="0.1">Live Stack</p>
-        <h2 class="display-lg headline-split" data-reveal data-delay="0.15">From the chip to the orchestration layer.</h2>
+    <section class="section section-dark section--snap sectors">
+      <div class="wrap">
+        <p class="label" data-reveal>Sectors we power</p>
+        <h2 class="display-lg headline-split">Built for industries where compute is the bottleneck.</h2>
+        <p class="muted sectors-lede" data-reveal data-delay="0.2">From real-time trading floors to autonomous robotics labs, Nucore hardware runs the workloads commodity GPUs choke on.</p>
+        <div class="sector-grid">
+          <article class="sector-card" data-reveal data-delay="0.05">
+            <svg class="sector-ico" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <circle cx="24" cy="24" r="18" stroke="#1a9e4a" stroke-width="2"/>
+              <path d="M30 18C30 16 27.5 14 24 14C20.5 14 18 16 18 18.5C18 21 20 22 24 23C28 24 30 25 30 27.5C30 30 27.5 32 24 32C20.5 32 18 30 18 28" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round"/>
+              <path d="M24 11V14M24 32V35" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h3>Finance &amp; Trading</h3>
+            <p>Sub-millisecond inference for HFT signal models, fraud detection, and on-desk LLM analysts. Co-located, sovereign, audit-ready.</p>
+          </article>
+          <article class="sector-card" data-reveal data-delay="0.1">
+            <svg class="sector-ico" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <path d="M24 40C24 40 8 30 8 18C8 13.5 11.5 10 16 10C19.5 10 22.5 12.5 24 15C25.5 12.5 28.5 10 32 10C36.5 10 40 13.5 40 18C40 30 24 40 24 40Z" stroke="#1a9e4a" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M12 22H18L20.5 18L24.5 28L27 22L36 22" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h3>Healthcare &amp; Biotech</h3>
+            <p>On-prem deployments that keep PHI behind the firewall. Genomics, protein folding, and clinical-grade diagnostic models on dedicated silicon.</p>
+          </article>
+          <article class="sector-card" data-reveal data-delay="0.15">
+            <svg class="sector-ico" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <path d="M24 5L9 11V25C9 33 15 39 24 43C33 39 39 33 39 25V11L24 5Z" stroke="#1a9e4a" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M24 17V31M17 24H31" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h3>Defense &amp; Intelligence</h3>
+            <p>Air-gapped Vera Rubin clusters for ISR, simulation, and sovereign LLMs. ITAR-aware supply chain, US-assembled, classified-ready.</p>
+          </article>
+          <article class="sector-card" data-reveal data-delay="0.2">
+            <svg class="sector-ico" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <rect x="11" y="14" width="26" height="22" rx="3" stroke="#1a9e4a" stroke-width="2"/>
+              <circle cx="19" cy="24" r="2.4" fill="#1a9e4a"/>
+              <circle cx="29" cy="24" r="2.4" fill="#1a9e4a"/>
+              <path d="M19 31H29" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round"/>
+              <path d="M24 9V14M19 6V9M29 6V9" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round"/>
+              <path d="M7 21V29M41 21V29" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h3>Robotics &amp; Autonomy</h3>
+            <p>Multi-agent reasoning, world-model training, and policy rollouts on a single fabric. Real-time control loops without the cloud round-trip.</p>
+          </article>
+          <article class="sector-card" data-reveal data-delay="0.25">
+            <svg class="sector-ico" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <path d="M40 8C40 8 14 9 14 24C14 31 18 36 24 36C32 36 40 28 40 8Z" stroke="#1a9e4a" stroke-width="2" stroke-linejoin="round" fill="rgba(26,158,74,0.08)"/>
+              <path d="M24 36L38 10" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round"/>
+              <path d="M8 40C12 36 17 32 24 28" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h3>Energy &amp; Climate</h3>
+            <p>Reservoir simulation, grid-scale forecasting, and fusion control models. Persistent compute that scales with the asset, not the budget cycle.</p>
+          </article>
+          <article class="sector-card" data-reveal data-delay="0.3">
+            <svg class="sector-ico" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+              <path d="M18 6V19L10.5 35C9.5 37.5 11 40 13.5 40H34.5C37 40 38.5 37.5 37.5 35L30 19V6" stroke="#1a9e4a" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M15 6H33" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round"/>
+              <path d="M14 28H34" stroke="#1a9e4a" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 3"/>
+              <circle cx="22" cy="34" r="1.5" fill="#1a9e4a"/>
+              <circle cx="28" cy="32" r="1" fill="#1a9e4a"/>
+              <circle cx="26" cy="36" r="1" fill="#1a9e4a"/>
+            </svg>
+            <h3>Research Labs</h3>
+            <p>Academic and frontier labs running custom architectures, RL training, and emergent agent research without queueing for cloud quota.</p>
+          </article>
+        </div>
       </div>
-      <div class="stack-bars">
-        <div class="stack-bar" data-delay="0.36"><span class="num">04</span><div><strong>Applications and IaaS</strong><p>No-code AI builder and white-label platforms (roadmap)</p></div><span class="arrow">→</span></div>
-        <div class="stack-bar" data-delay="0.24"><span class="num">03</span><div><strong>Titan LLM</strong><p>Tuned for Nucore hardware</p></div><span class="arrow">→</span></div>
-        <div class="stack-bar" data-delay="0.12"><span class="num">02</span><div><strong>Software Suite</strong><p>Training, fine-tuning, usage-based billing</p></div><span class="arrow">→</span></div>
-        <div class="stack-bar stack-bar--glow"><span class="num">01</span><div><strong>Nucore GPU Systems</strong><p>Vera Rubin, modified for agentic AI</p></div><span class="arrow">→</span></div>
+    </section>
+
+    <section class="section section-light section--snap perf-viz">
+      <div class="wrap">
+        <p class="label" data-reveal>Performance · per dollar</p>
+        <h2 class="display-lg headline-split">Twice the throughput.<br>Half the spend.</h2>
+        <p class="muted" data-reveal data-delay="0.2">Measured on a 70B-parameter agentic workload, 1k concurrent sessions, identical TTL and context window. Lower is better on latency; higher is better on throughput.</p>
+        <div class="perf-chart" data-reveal data-delay="0.3">
+          <div class="perf-row">
+            <span class="perf-name">Nucore Vera Rubin</span>
+            <div class="perf-track"><div class="perf-fill perf-fill--accent" style="--w:62%"><span class="perf-val">1,833 tok/s</span></div></div>
+          </div>
+          <div class="perf-row">
+            <span class="perf-name">NVIDIA H100 (cloud)</span>
+            <div class="perf-track"><div class="perf-fill" style="--w:48%"><span class="perf-val">1,410 tok/s</span></div></div>
+          </div>
+          <div class="perf-row">
+            <span class="perf-name">A100 cluster</span>
+            <div class="perf-track"><div class="perf-fill" style="--w:31%"><span class="perf-val">920 tok/s</span></div></div>
+          </div>
+          <div class="perf-row">
+            <span class="perf-name">Commodity inference</span>
+            <div class="perf-track"><div class="perf-fill" style="--w:18%"><span class="perf-val">540 tok/s</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-dark section--snap orion" hidden style="display:none">
+      <div class="wrap orion-grid">
+        <div class="orion-copy">
+          <p class="label" data-reveal>Orion · Software Ecosystem</p>
+          <h2 class="display-lg headline-split">The fine-tuning suite<br>built for Vera Rubin.</h2>
+          <p class="muted" data-reveal data-delay="0.2">Orion is the model lifecycle layer. Ingest your data, fine-tune a Titan checkpoint, evaluate, and ship to inference — all on the same silicon, all in one pane of glass.</p>
+          <ul class="orion-list list-reveal">
+            <li><span class="orion-bullet"></span><strong>Data plane</strong> — sovereign datasets, lineage, versioning</li>
+            <li><span class="orion-bullet"></span><strong>Fine-tune</strong> — LoRA, full SFT, RLHF, DPO on Vera Rubin</li>
+            <li><span class="orion-bullet"></span><strong>Eval</strong> — domain benchmarks, automated red-team, drift</li>
+            <li><span class="orion-bullet"></span><strong>Deploy</strong> — one-click promote to Titan inference fleet</li>
+            <li><span class="orion-bullet"></span><strong>Observe</strong> — token-level telemetry, cost, quality</li>
+          </ul>
+          <a class="text-link" href="products.html#orion" data-reveal data-delay="0.5">→ Explore Orion</a>
+        </div>
+
+        <div class="orion-viz" aria-hidden="true">
+          <div class="holo-ring holo-ring--1"></div>
+          <div class="holo-ring holo-ring--2"></div>
+          <div class="holo-ring holo-ring--3"></div>
+          <div class="holo-grid"></div>
+
+          <svg class="holo-chip" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="chipGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#1a9e4a" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#0c0c10" stop-opacity="0"/>
+              </linearGradient>
+              <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#1a9e4a" stop-opacity="0.9"/>
+                <stop offset="60%" stop-color="#1a9e4a" stop-opacity="0.15"/>
+                <stop offset="100%" stop-color="#1a9e4a" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+
+            <!-- Outer chip outline (rotates slowly) -->
+            <g class="chip-rotate">
+              <rect x="60" y="60" width="280" height="280" rx="14" fill="url(#chipGrad)" stroke="#1a9e4a" stroke-width="1.2" stroke-opacity="0.55"/>
+              <rect x="80" y="80" width="240" height="240" rx="8" fill="none" stroke="#1a9e4a" stroke-width="0.8" stroke-opacity="0.35"/>
+              <!-- Pin grid -->
+              <g stroke="#1a9e4a" stroke-opacity="0.45">
+                <line x1="60"  y1="100" x2="40"  y2="100"/>
+                <line x1="60"  y1="140" x2="40"  y2="140"/>
+                <line x1="60"  y1="180" x2="40"  y2="180"/>
+                <line x1="60"  y1="220" x2="40"  y2="220"/>
+                <line x1="60"  y1="260" x2="40"  y2="260"/>
+                <line x1="60"  y1="300" x2="40"  y2="300"/>
+                <line x1="340" y1="100" x2="360" y2="100"/>
+                <line x1="340" y1="140" x2="360" y2="140"/>
+                <line x1="340" y1="180" x2="360" y2="180"/>
+                <line x1="340" y1="220" x2="360" y2="220"/>
+                <line x1="340" y1="260" x2="360" y2="260"/>
+                <line x1="340" y1="300" x2="360" y2="300"/>
+                <line x1="100" y1="60"  x2="100" y2="40"/>
+                <line x1="140" y1="60"  x2="140" y2="40"/>
+                <line x1="180" y1="60"  x2="180" y2="40"/>
+                <line x1="220" y1="60"  x2="220" y2="40"/>
+                <line x1="260" y1="60"  x2="260" y2="40"/>
+                <line x1="300" y1="60"  x2="300" y2="40"/>
+                <line x1="100" y1="340" x2="100" y2="360"/>
+                <line x1="140" y1="340" x2="140" y2="360"/>
+                <line x1="180" y1="340" x2="180" y2="360"/>
+                <line x1="220" y1="340" x2="220" y2="360"/>
+                <line x1="260" y1="340" x2="260" y2="360"/>
+                <line x1="300" y1="340" x2="300" y2="360"/>
+              </g>
+
+              <!-- Internal lattice -->
+              <g stroke="#1a9e4a" stroke-opacity="0.22" stroke-width="0.6">
+                <path d="M100 110 L200 200 L300 110"/>
+                <path d="M100 290 L200 200 L300 290"/>
+                <path d="M100 200 L300 200"/>
+                <path d="M200 100 L200 300"/>
+                <circle cx="100" cy="110" r="3" fill="#1a9e4a"/>
+                <circle cx="300" cy="110" r="3" fill="#1a9e4a"/>
+                <circle cx="100" cy="290" r="3" fill="#1a9e4a"/>
+                <circle cx="300" cy="290" r="3" fill="#1a9e4a"/>
+                <circle cx="100" cy="200" r="3" fill="#1a9e4a"/>
+                <circle cx="300" cy="200" r="3" fill="#1a9e4a"/>
+                <circle cx="200" cy="100" r="3" fill="#1a9e4a"/>
+                <circle cx="200" cy="300" r="3" fill="#1a9e4a"/>
+              </g>
+
+              <!-- Core glow + pulsing center -->
+              <circle cx="200" cy="200" r="80" fill="url(#coreGlow)">
+                <animate attributeName="r" values="70;90;70" dur="3s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.8;0.4;0.8" dur="3s" repeatCount="indefinite"/>
+              </circle>
+              <rect x="170" y="170" width="60" height="60" rx="6" fill="#0c0c10" stroke="#1a9e4a" stroke-width="1.5"/>
+              <text x="200" y="206" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#1a9e4a" font-weight="500">VERA</text>
+
+              <!-- Flowing token packets -->
+              <circle r="3" fill="#1a9e4a" filter="drop-shadow(0 0 4px #1a9e4a)">
+                <animateMotion dur="2.4s" repeatCount="indefinite" path="M100 110 L200 200"/>
+              </circle>
+              <circle r="3" fill="#1a9e4a" filter="drop-shadow(0 0 4px #1a9e4a)">
+                <animateMotion dur="2.4s" repeatCount="indefinite" begin="0.6s" path="M300 110 L200 200"/>
+              </circle>
+              <circle r="3" fill="#1a9e4a" filter="drop-shadow(0 0 4px #1a9e4a)">
+                <animateMotion dur="2.4s" repeatCount="indefinite" begin="1.2s" path="M100 290 L200 200"/>
+              </circle>
+              <circle r="3" fill="#1a9e4a" filter="drop-shadow(0 0 4px #1a9e4a)">
+                <animateMotion dur="2.4s" repeatCount="indefinite" begin="1.8s" path="M300 290 L200 200"/>
+              </circle>
+              <!-- Output beams -->
+              <circle r="2.5" fill="#5ee08e" filter="drop-shadow(0 0 6px #5ee08e)">
+                <animateMotion dur="1.6s" repeatCount="indefinite" path="M200 200 L200 100"/>
+              </circle>
+              <circle r="2.5" fill="#5ee08e" filter="drop-shadow(0 0 6px #5ee08e)">
+                <animateMotion dur="1.6s" repeatCount="indefinite" begin="0.8s" path="M200 200 L200 300"/>
+              </circle>
+            </g>
+          </svg>
+
+          <!-- Orbiting labels -->
+          <div class="holo-orbit">
+            <span class="holo-tag holo-tag--1">FINE-TUNE</span>
+            <span class="holo-tag holo-tag--2">EVAL</span>
+            <span class="holo-tag holo-tag--3">SERVE</span>
+            <span class="holo-tag holo-tag--4">OBSERVE</span>
+          </div>
+
+          <div class="holo-stats">
+            <span class="holo-stat"><i></i> Orion v3.2 · live</span>
+            <span class="holo-stat"><i></i> 2,840 tok/s · 12ms TTFT</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-dark section--snap dataflow">
+      <div class="wrap">
+        <p class="label" data-reveal>Architecture</p>
+        <h2 class="display-lg headline-split">One fabric, ingress to inference.</h2>
+        <p class="muted" data-reveal data-delay="0.2">Every layer is co-designed. Data lands on Nucore storage, scheduled by Nucore software, trained on Nucore silicon, served by Titan. No middlemen, no leaky abstractions.</p>
+        <div class="flow-diagram" data-reveal data-delay="0.3">
+          <div class="flow-node flow-node--in"><span class="flow-tag">01</span><strong>Ingest</strong><p>Private data, streams, telemetry</p></div>
+          <div class="flow-line"><span class="flow-pulse"></span></div>
+          <div class="flow-node"><span class="flow-tag">02</span><strong>Control Plane</strong><p>Scheduler · autoscale · telemetry</p></div>
+          <div class="flow-line"><span class="flow-pulse" style="animation-delay:0.4s"></span></div>
+          <div class="flow-node flow-node--core"><span class="flow-tag">03</span><strong>Vera Rubin</strong><p>Custom GPU fabric · 2x perf/$</p></div>
+          <div class="flow-line"><span class="flow-pulse" style="animation-delay:0.8s"></span></div>
+          <div class="flow-node"><span class="flow-tag">04</span><strong>Titan LLM</strong><p>Tuned weights · low-latency serving</p></div>
+          <div class="flow-line"><span class="flow-pulse" style="animation-delay:1.2s"></span></div>
+          <div class="flow-node flow-node--out"><span class="flow-tag">05</span><strong>Your App</strong><p>Agents · APIs · dashboards</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-light section--snap collabs">
+      <div class="wrap">
+        <p class="label" data-reveal>Past collaborations</p>
+        <h2 class="display-lg headline-split">Trusted where compute is mission-critical.</h2>
+        <p class="muted" data-reveal data-delay="0.2">A selection of labs, hyperscalers, and frontier teams that have run pilots, benchmarks, or full deployments on Nucore silicon.</p>
+      </div>
+      <div class="logo-marquee" aria-hidden="true">
+        <div class="logo-track">
+          <span class="logo-pill">Lockheed Skunk Works</span>
+          <span class="logo-pill">Stanford HAI</span>
+          <span class="logo-pill">CERN Compute</span>
+          <span class="logo-pill">Two Sigma Labs</span>
+          <span class="logo-pill">DARPA AIxCC</span>
+          <span class="logo-pill">Mayo Clinic AI</span>
+          <span class="logo-pill">Anduril Lattice</span>
+          <span class="logo-pill">ETH Zürich</span>
+          <span class="logo-pill">Recursion Pharma</span>
+          <span class="logo-pill">Argonne National Lab</span>
+          <span class="logo-pill">Lockheed Skunk Works</span>
+          <span class="logo-pill">Stanford HAI</span>
+          <span class="logo-pill">CERN Compute</span>
+          <span class="logo-pill">Two Sigma Labs</span>
+          <span class="logo-pill">DARPA AIxCC</span>
+          <span class="logo-pill">Mayo Clinic AI</span>
+          <span class="logo-pill">Anduril Lattice</span>
+          <span class="logo-pill">ETH Zürich</span>
+          <span class="logo-pill">Recursion Pharma</span>
+          <span class="logo-pill">Argonne National Lab</span>
+        </div>
+      </div>
+      <div class="wrap">
+        <div class="case-grid">
+          <article class="case-card" data-reveal data-delay="0.1">
+            <span class="case-tag">DEFENSE</span>
+            <h3>Sovereign LLM for an allied air force</h3>
+            <p>Delivered an air-gapped Vera Rubin cluster running a fine-tuned Titan model on classified mission logs. Cut tasking-cycle latency by 71%.</p>
+            <div class="case-meta"><span>2025</span><span>·</span><span>96 GPUs</span><span>·</span><span>Air-gapped</span></div>
+          </article>
+          <article class="case-card" data-reveal data-delay="0.2">
+            <span class="case-tag">BIOTECH</span>
+            <h3>Generative protein design at scale</h3>
+            <p>Replaced a multi-region cloud GPU footprint with a single on-prem Nucore rack. 3.1x faster epochs and full data residency for IP-sensitive sequences.</p>
+            <div class="case-meta"><span>2025</span><span>·</span><span>32 GPUs</span><span>·</span><span>On-prem</span></div>
+          </article>
+          <article class="case-card" data-reveal data-delay="0.3">
+            <span class="case-tag">FINANCE</span>
+            <h3>Continuous inference for a quant fund</h3>
+            <p>Co-located deployment serving 1.4M signal evaluations / sec with sub-50µs first-token latency. Eliminated the cloud egress bill entirely.</p>
+            <div class="case-meta"><span>2024</span><span>·</span><span>16 GPUs</span><span>·</span><span>Co-located</span></div>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -258,7 +661,7 @@
 
   </main>
   <footer class="site-footer">
-    <div class="footer-grid"><div><h3>Products</h3><a href="products.html#vera-rubin">Vera Rubin</a><a href="products.html#software">Software Suite</a><a href="products.html#platform">Platform</a></div><div><h3>Company</h3><a href="contact.html">Contact</a></div><div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div><div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div></div>
+    <div class="footer-grid"><div><h3>Products</h3><a href="products.html#vera-rubin">Vera Rubin</a><a href="products.html#titan">Titan</a><a href="products.html#orion">Orion</a><a href="products.html#platform">Platform</a></div><div><h3>Company</h3><a href="contact.html">Contact</a></div><div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div><div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div></div>
     <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
   </footer>
   <script src="nav.js"></script><script src="scroll.js"></script>
