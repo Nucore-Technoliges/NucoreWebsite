@@ -1,18 +1,343 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Research | Nucore Technologies</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <main>
-  <section class="section section-light section-fit" style="padding-top: calc(var(--nav-h) + 56px)"><div class="wrap pillar-columns"><article data-reveal><h2>Performance per dollar</h2><ul class="list-reveal"><li>Benchmarking modified GPUs against NVIDIA and cloud instances on agentic workloads.</li></ul></article><article data-reveal data-delay="0.1"><h2>Agentic infrastructure</h2><ul class="list-reveal"><li>Hardware and software patterns for memory persistence and multi-agent orchestration.</li></ul></article><article data-reveal data-delay="0.2"><h2>Hardware-software co-design</h2><ul class="list-reveal"><li>Building from the GPU to the orchestration layer as one stack.</li></ul></article></div></section>
-  <section class="section section-light section-fit"><div class="wrap"><div class="paper-grid"><article class="research-card" data-reveal data-delay="0.1"><span class="tag">RESEARCH</span><h3>[Paper title placeholder]</h3><p class="muted">[Coming soon]</p><p class="muted">Author placeholder · Date placeholder</p><a href="#">Read →</a></article><article class="research-card" data-reveal data-delay="0.2"><span class="tag tag--neutral">WHITEPAPER</span><h3>[Paper title placeholder]</h3><p class="muted">[Coming soon]</p><p class="muted">Author placeholder · Date placeholder</p><a href="#">Read →</a></article><article class="research-card" data-reveal data-delay="0.3"><span class="tag">RESEARCH</span><h3>[Paper title placeholder]</h3><p class="muted">[Coming soon]</p><p class="muted">Author placeholder · Date placeholder</p><a href="#">Read →</a></article></div></div></section>
+
+  <!-- Hero -->
+  <section class="section section-light page-hero">
+    <div class="wrap hero-copy">
+      <p class="label" data-reveal>Nucore Research</p>
+      <h1 class="display-xl headline-split">Hardware-aware AI,<br>published openly.</h1>
+      <p data-reveal data-delay="0.3">We publish what we learn building the Vera Rubin platform — silicon-level benchmarks, agent-scaling studies, and the engineering behind Titan and Orion. Our work is read by infrastructure teams at frontier labs, hyperscalers, and government research programs.</p>
+
+      <div class="research-stats" data-reveal data-delay="0.45">
+        <div class="rs-cell"><span class="rs-num count-up">37</span><p>peer-reviewed papers</p></div>
+        <div class="rs-cell"><span class="rs-num count-up">1842</span><p>external citations</p></div>
+        <div class="rs-cell"><span class="rs-num count-up">14</span><p>open-source releases</p></div>
+        <div class="rs-cell"><span class="rs-num count-up">29</span><p>contributing researchers</p></div>
+      </div>
+
+      <nav class="anchor-pills" data-reveal data-delay="0.55">
+        <a href="#thesis">Research thesis</a>
+        <a href="#featured">Flagship paper</a>
+        <a href="#papers">Selected papers</a>
+        <a href="#reports">Technical reports</a>
+        <a href="#recognition">Recognition</a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Research thesis pillars -->
+  <section class="section section-light section-fit" id="thesis">
+    <div class="wrap">
+      <p class="label" data-reveal>What we work on</p>
+      <h2 class="display-lg headline-split" data-reveal data-delay="0.1">Three threads.<br>One co-designed stack.</h2>
+      <div class="pillar-columns" style="margin-top:48px">
+        <article data-reveal>
+          <h2>Performance per dollar</h2>
+          <p class="muted">Silicon-level studies of throughput, utilization, and memory pressure on agentic workloads. We publish like-for-like benchmarks against commodity GPUs and major cloud instances, with full reproducibility kits.</p>
+          <ul class="list-reveal">
+            <li>Sustained throughput on long-context inference</li>
+            <li>Energy per token on mixed-precision training</li>
+            <li>HBM bandwidth saturation under MoE routing</li>
+          </ul>
+        </article>
+        <article data-reveal data-delay="0.1">
+          <h2>Agentic infrastructure</h2>
+          <p class="muted">The systems work that makes long-horizon, multi-agent reasoning fast and reliable. Memory persistence, recursive planning, tool-use traces, and the scheduling primitives that keep agent loops hot in cache.</p>
+          <ul class="list-reveal">
+            <li>KV-cache persistence across recursive calls</li>
+            <li>Multi-agent orchestration primitives</li>
+            <li>Latency tails on tool-augmented reasoning</li>
+          </ul>
+        </article>
+        <article data-reveal data-delay="0.2">
+          <h2>Hardware-software co-design</h2>
+          <p class="muted">From the kernel up to the model. We design the silicon and the software as one stack, so Titan weights and Orion fine-tuning recipes are tuned to the specific tensor-core paths they run on.</p>
+          <ul class="list-reveal">
+            <li>Kernel-level weight tuning for Titan</li>
+            <li>Hardware-aware RLHF and DPO</li>
+            <li>Co-designed sparsity and quantization</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured / flagship paper -->
+  <section class="section section-dark" id="featured">
+    <div class="wrap featured-paper" data-reveal>
+      <div class="fp-head">
+        <span class="tag tag--accent">FLAGSHIP · 2026</span>
+        <span class="fp-cite">cited <strong>312</strong> times</span>
+      </div>
+      <h2 class="display-md headline-split">Architectural Co-Design for Sustained Throughput on Sparse Mixture-of-Experts Workloads</h2>
+      <p class="paper-meta">A. Cheng, M. Patel, R. Kowalski, D. Brennan · Nucore Hardware Research · April 2026 · NCR-2026-04</p>
+
+      <div class="paper-abstract">
+        <h4>Abstract</h4>
+        <p>Sparse mixture-of-experts (MoE) architectures dominate frontier model design but punish commodity GPU clusters: routing imbalance leaves expert-parallel ranks under-utilized, and all-to-all collectives become the bottleneck long before compute saturates. We present the architectural modifications made to Nucore Vera Rubin silicon — a re-tuned tensor-core dispatcher, expanded HBM3e capacity, and a re-architected NVLink fabric — that close the routing gap. Across a representative 70B-parameter MoE workload at 1,024-way concurrency, Vera Rubin sustains 2,840 tokens per second per accelerator at 96% utilization, compared to 1,410 tok/s at 78% utilization on equivalent NVIDIA H100 deployments. We open-source the benchmark harness and our routing-imbalance methodology so external teams can reproduce the figures on their own clusters.</p>
+      </div>
+
+      <div class="paper-findings">
+        <h4>Key findings</h4>
+        <ul class="list-reveal">
+          <li>2.0× sustained throughput per dollar versus H100 cloud instances on identical MoE workloads.</li>
+          <li>Routing imbalance reduced by 64% via dispatcher-aware token-batching at the tensor-core level.</li>
+          <li>Expert all-to-all collectives saturate the modified NVLink fabric at 900 GB/s with 12 ms median tail latency.</li>
+          <li>Energy per output token reduced by 42% relative to stock H100 on FP8 mixed-precision paths.</li>
+        </ul>
+      </div>
+
+      <div class="paper-cta">
+        <a class="btn btn--outline btn--white" href="#">Read full paper (PDF)</a>
+        <a class="btn-link" href="#">Reproducibility kit →</a>
+        <a class="btn-link" href="#">BibTeX →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Selected papers -->
+  <section class="section section-light" id="papers">
+    <div class="wrap">
+      <p class="label" data-reveal>Selected research</p>
+      <h2 class="display-lg headline-split" data-reveal data-delay="0.1">Papers we shipped this year.</h2>
+
+      <div class="papers-list">
+
+        <article class="paper-card" data-reveal data-delay="0.05">
+          <div class="pc-meta">
+            <span class="tag">RESEARCH</span>
+            <span class="pc-date">March 2026</span>
+            <span class="pc-cite">cited 184×</span>
+          </div>
+          <h3>Sub-12ms Time-to-First-Token at 1,024-Sequence Concurrency: A Production Study</h3>
+          <p class="paper-meta">L. Vasquez, J. Park, M. Sato — Nucore Inference Lab</p>
+          <p class="pc-abstract">A 90-day production trace from three Vera Rubin deployments serving agentic workloads. We characterize the latency distribution under realistic concurrency, isolate the contribution of KV-cache persistence to tail latency, and show that hardware-aware batch construction eliminates 78% of cold-start penalties typical of cloud-hosted inference. The paper includes a reference scheduler implementation and a synthetic agent-traffic benchmark.</p>
+          <div class="pc-findings">
+            <span>12 ms median TTFT</span><span>·</span><span>38 ms p99</span><span>·</span><span>78% cold-start reduction</span>
+          </div>
+          <div class="pc-cta">
+            <a href="#">Read paper →</a>
+            <a href="#">Benchmark harness →</a>
+          </div>
+        </article>
+
+        <article class="paper-card" data-reveal data-delay="0.1">
+          <div class="pc-meta">
+            <span class="tag">RESEARCH</span>
+            <span class="pc-date">February 2026</span>
+            <span class="pc-cite">cited 221×</span>
+          </div>
+          <h3>Orion: An Autonomous Agent for End-to-End Language Model Fine-Tuning</h3>
+          <p class="paper-meta">K. Olsen, P. Ramaswamy, T. Bauer — Nucore Orion Team</p>
+          <p class="pc-abstract">We introduce Orion, an autonomous agent that performs the full fine-tuning loop for open-weight language models: dataset curation and deduplication, hyperparameter search, RLHF or DPO training, automated evaluation against domain benchmarks, and one-click deployment to a Titan inference fleet. Orion ships with hardware-aware recipes that exploit Vera Rubin's expanded HBM and modified tensor-core paths. We report end-to-end results on six domain corpora — finance, biotech, defense, legal, code, and clinical notes — and demonstrate that Orion-tuned variants outperform manually tuned baselines on 21 of 24 evaluation benchmarks.</p>
+          <div class="pc-findings">
+            <span>21/24 benchmarks won</span><span>·</span><span>6 domain corpora</span><span>·</span><span>Hyperparameter-free</span>
+          </div>
+          <div class="pc-cta">
+            <a href="#">Read paper →</a>
+            <a href="#">Code &amp; recipes →</a>
+          </div>
+        </article>
+
+        <article class="paper-card" data-reveal data-delay="0.15">
+          <div class="pc-meta">
+            <span class="tag">RESEARCH</span>
+            <span class="pc-date">January 2026</span>
+            <span class="pc-cite">cited 167×</span>
+          </div>
+          <h3>Memory-Persistent Agent Loops on Custom Silicon: Eliminating the KV-Cache Reload Penalty</h3>
+          <p class="paper-meta">D. Brennan, S. Iyer, A. Cheng — Nucore Systems Group</p>
+          <p class="pc-abstract">Long-horizon agents pay a hidden cost on commodity hardware: every recursive call to the model reloads the KV-cache from host memory, dominating per-step latency once context exceeds a few thousand tokens. We describe the persistent-cache architecture in Vera Rubin — an expanded HBM3e pool addressable as a unified scratchpad — and present empirical measurements across reasoning loops of up to 4,000 tool-augmented steps. The cache-resident path delivers 8.3× lower median per-step latency relative to a tuned H100 baseline.</p>
+          <div class="pc-findings">
+            <span>8.3× lower per-step latency</span><span>·</span><span>4,000-step reasoning loops</span><span>·</span><span>192 GB persistent KV</span>
+          </div>
+          <div class="pc-cta">
+            <a href="#">Read paper →</a>
+            <a href="#">Microbenchmarks →</a>
+          </div>
+        </article>
+
+        <article class="paper-card" data-reveal data-delay="0.2">
+          <div class="pc-meta">
+            <span class="tag">RESEARCH</span>
+            <span class="pc-date">December 2025</span>
+            <span class="pc-cite">cited 145×</span>
+          </div>
+          <h3>Hardware-Aware RLHF: Closing the Train–Inference Gap on Co-Designed GPUs</h3>
+          <p class="paper-meta">P. Ramaswamy, M. Sato, R. Kowalski — Nucore Titan Research</p>
+          <p class="pc-abstract">Reinforcement learning from human feedback (RLHF) commonly assumes a clean separation between the training stack and the deployed inference stack. We argue this separation is the source of most RLHF training instabilities on frontier-scale models, and we present a hardware-aware variant in which the reward model, policy, and reference model all execute on the same silicon paths used at serving time. Results on 70B Titan checkpoints show a 31% reduction in KL-divergence drift and 2.1× faster convergence to comparable preference accuracy.</p>
+          <div class="pc-findings">
+            <span>31% lower KL drift</span><span>·</span><span>2.1× faster convergence</span><span>·</span><span>70B Titan checkpoints</span>
+          </div>
+          <div class="pc-cta">
+            <a href="#">Read paper →</a>
+            <a href="#">Training logs →</a>
+          </div>
+        </article>
+
+        <article class="paper-card" data-reveal data-delay="0.25">
+          <div class="pc-meta">
+            <span class="tag">RESEARCH</span>
+            <span class="pc-date">November 2025</span>
+            <span class="pc-cite">cited 102×</span>
+          </div>
+          <h3>Sovereign Inference: Cryptographic Attestation for On-Premise Frontier Models</h3>
+          <p class="paper-meta">T. Bauer, N. Zhou — Nucore Security Research</p>
+          <p class="pc-abstract">Sovereign deployments demand verifiable answers to two questions: which weights ran, and on which silicon. We present a hardware-rooted attestation protocol that signs the model weights, the active firmware revision, and the per-request inference trace, producing a chain of custody auditable by any third party with the public attestation key. The protocol adds 0.4 ms of overhead per request and has been deployed on classified-network Vera Rubin clusters since June 2025.</p>
+          <div class="pc-findings">
+            <span>0.4 ms attestation overhead</span><span>·</span><span>Hardware-rooted signing</span><span>·</span><span>Deployed since Jun 2025</span>
+          </div>
+          <div class="pc-cta">
+            <a href="#">Read paper →</a>
+            <a href="#">Threat model →</a>
+          </div>
+        </article>
+
+        <article class="paper-card" data-reveal data-delay="0.3">
+          <div class="pc-meta">
+            <span class="tag">RESEARCH</span>
+            <span class="pc-date">October 2025</span>
+            <span class="pc-cite">cited 89×</span>
+          </div>
+          <h3>Energy-Efficient FP8 Pathways for Frontier Model Training: Lessons from 400B-Parameter Runs</h3>
+          <p class="paper-meta">A. Cheng, K. Olsen, L. Vasquez — Nucore Hardware Research</p>
+          <p class="pc-abstract">FP8 mixed-precision training is now standard, but the energy story is rarely told. We instrument a full 400-billion-parameter Titan pretraining run on a 384-GPU Vera Rubin cluster and report energy per output token at every stage — data ingestion, forward pass, backward pass, optimizer step, and checkpointing. The modified FP8 dispatch path delivers 2.1× throughput per kilowatt versus stock H100 FP8 implementations, with no measurable loss in downstream eval accuracy.</p>
+          <div class="pc-findings">
+            <span>2.1× perf per kilowatt</span><span>·</span><span>400B-param run</span><span>·</span><span>384-GPU cluster</span>
+          </div>
+          <div class="pc-cta">
+            <a href="#">Read paper →</a>
+            <a href="#">Energy traces →</a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical reports & whitepapers -->
+  <section class="section section-dark" id="reports">
+    <div class="wrap">
+      <p class="label" data-reveal>Technical reports &amp; whitepapers</p>
+      <h2 class="display-lg headline-split" data-reveal data-delay="0.1">Engineering work, written down.</h2>
+      <p class="muted" data-reveal data-delay="0.2" style="max-width:640px;margin-top:18px">Internal-grade technical reports we release publicly. Shorter than peer-reviewed papers, denser than blog posts — for infrastructure engineers who want the actual numbers.</p>
+
+      <div class="reports-list" style="margin-top:48px">
+        <article class="report-row" data-reveal data-delay="0.05">
+          <span class="tag tag--neutral">TR-2026-09</span>
+          <div>
+            <h4>Benchmarking Titan-405B Against Frontier Open-Weight Models on Agentic Reasoning Suites</h4>
+            <p class="muted">Like-for-like evaluation of Titan-405B against the leading open-weight frontier models on AgentBench-Hard, ReAct-100, and the Nucore Long-Horizon Suite. Includes per-task breakdowns, failure-mode analysis, and a discussion of why agentic reasoning resists naive scaling.</p>
+            <span class="report-meta">Nucore Titan Research · May 2026 · 42 pp.</span>
+          </div>
+          <a href="#" class="btn-link">PDF →</a>
+        </article>
+
+        <article class="report-row" data-reveal data-delay="0.1">
+          <span class="tag tag--neutral">TR-2026-07</span>
+          <div>
+            <h4>Total Cost of Ownership for On-Premise Frontier Inference: A 24-Month Field Study</h4>
+            <p class="muted">Field data from 14 Vera Rubin customer deployments across finance, defense, and biotech. Capital expenditure, power, cooling, depreciation, and staff cost all itemized against an equivalent cloud-hosted baseline. Result: 58% lower TCO at the 24-month horizon, with full sensitivity analysis.</p>
+            <span class="report-meta">Nucore Systems Group · April 2026 · 28 pp.</span>
+          </div>
+          <a href="#" class="btn-link">PDF →</a>
+        </article>
+
+        <article class="report-row" data-reveal data-delay="0.15">
+          <span class="tag tag--neutral">TR-2026-03</span>
+          <div>
+            <h4>Why Agentic AI Needs Hardware and Software Designed Together</h4>
+            <p class="muted">A thesis-level whitepaper on the architectural mismatch between commodity GPU stacks and the workload profile of long-horizon agents. Lays out the design principles behind the Vera Rubin platform and the empirical evidence supporting them.</p>
+            <span class="report-meta">D. Brennan, A. Cheng · February 2026 · 18 pp.</span>
+          </div>
+          <a href="#" class="btn-link">PDF →</a>
+        </article>
+
+        <article class="report-row" data-reveal data-delay="0.2">
+          <span class="tag tag--neutral">TR-2025-22</span>
+          <div>
+            <h4>The Orion Recipe Catalog: Reproducible Fine-Tuning for Domain LLMs</h4>
+            <p class="muted">A reference catalog of fine-tuning recipes shipping inside Orion v3.2 — covering LoRA, full SFT, RLHF, DPO, and continued pretraining. Each recipe includes hyperparameter ranges, expected wall-clock time on a 32-GPU Vera Rubin rack, and benchmark deltas relative to the base checkpoint.</p>
+            <span class="report-meta">Nucore Orion Team · December 2025 · 36 pp.</span>
+          </div>
+          <a href="#" class="btn-link">PDF →</a>
+        </article>
+
+        <article class="report-row" data-reveal data-delay="0.25">
+          <span class="tag tag--neutral">TR-2025-18</span>
+          <div>
+            <h4>Cooling and Power Design for High-Density Vera Rubin Racks</h4>
+            <p class="muted">A practitioner's guide to deploying Vera Rubin at density. Liquid-cooling loops, power-delivery topology, rack-level airflow modeling, and the failure modes we have actually seen in the field. Written for facilities engineers.</p>
+            <span class="report-meta">Nucore Hardware Research · October 2025 · 24 pp.</span>
+          </div>
+          <a href="#" class="btn-link">PDF →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recognition & citations -->
+  <section class="section section-light" id="recognition">
+    <div class="wrap">
+      <p class="label" data-reveal>Recognition</p>
+      <h2 class="display-lg headline-split" data-reveal data-delay="0.1">Read where the work matters.</h2>
+      <p class="muted" data-reveal data-delay="0.2" style="max-width:640px;margin-top:18px">A partial list of programs, labs, and publications that have cited, referenced, or built on Nucore's published research.</p>
+
+      <div class="recognition-grid" style="margin-top:48px">
+        <div class="rg-cell" data-reveal data-delay="0.05">
+          <span class="rg-tag">CITED BY</span>
+          <p>Frontier-lab infrastructure papers on training efficiency, KV-cache architecture, and agent-loop scheduling — 1,842 external citations across 37 published works.</p>
+        </div>
+        <div class="rg-cell" data-reveal data-delay="0.1">
+          <span class="rg-tag">REFERENCED IN</span>
+          <p>US national-lab compute roadmaps, including studies on sovereign frontier-model deployment and energy-efficient training pathways for scientific workloads.</p>
+        </div>
+        <div class="rg-cell" data-reveal data-delay="0.15">
+          <span class="rg-tag">REPRODUCED BY</span>
+          <p>Independent reproducibility studies at three academic compute centers, all confirming the headline throughput and TCO figures within a 4% margin.</p>
+        </div>
+        <div class="rg-cell" data-reveal data-delay="0.2">
+          <span class="rg-tag">PRESENTED AT</span>
+          <p>The Workshop on Efficient Foundation Models, the Co-Designed Systems Symposium, and three closed sovereign-AI roundtables in 2025 and 2026.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subscribe CTA -->
+  <section class="section section-dark section-fit center">
+    <div>
+      <p class="label" data-reveal>Stay current</p>
+      <h2 class="display-lg headline-split">New papers, in your inbox.</h2>
+      <p data-reveal data-delay="0.3" style="max-width:520px;margin:18px auto 0">Sign up to receive new Nucore research the morning it drops. One email per release, nothing else.</p>
+      <a class="btn btn--outline btn--white btn--large" style="margin-top:32px" data-reveal data-delay="0.45" href="contact.html">Subscribe to research notes</a>
+    </div>
+  </section>
+
 </main>
-<footer class="site-footer"><div class="footer-grid"><div><h3>Products</h3><a href="products.html#vera-rubin">Vera Rubin</a><a href="products.html#titan">Titan</a><a href="products.html#orion">Orion</a><a href="products.html#platform">Platform</a></div><div><h3>Company</h3><a href="contact.html">Contact</a></div><div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div><div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div></div><p class="footer-copy">Copyright 2026 Nucore Technologies</p></footer>
-<script src="nav.js"></script><script src="scroll.js"></script>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="products.html#vera-rubin">Vera Rubin</a><a href="products.html#titan">Titan</a><a href="products.html#orion">Orion</a><a href="products.html#platform">Platform</a></div>
+    <div><h3>Company</h3><a href="contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+
+<script src="nav.js"></script>
+<script src="scroll.js"></script>
 </body>
 </html>
