@@ -9,7 +9,7 @@ if (configurator) {
   const request = configurator.querySelector("[data-request-config]");
 
   let state = {
-    product: "vera-rubin",
+    product: "spartan",
     memory: 256,
     cores: 6,
     cooling: "Liquid",
@@ -17,13 +17,13 @@ if (configurator) {
     interface: "PCIe"
   };
 
-  const names = { "vera-rubin": "Vera Rubin", blackwell: "Vera Rubin Cluster", "5090ti": "Vera Rubin Edge" };
+  const names = { "spartan": "Spartan", "kronos": "Kronos Cluster", "spartan-edge": "Spartan Edge" };
   const memorySteps = [128, 256, 512, 1024];
 
   function renderSpecs() {
     specs.classList.remove("is-visible");
     window.setTimeout(() => {
-      if (state.product === "5090ti") {
+      if (state.product === "spartan-edge") {
         specs.innerHTML = `
           <div class="config-field"><label>Memory</label><div class="config-toggle">${["24GB", "48GB"].map(v => `<button type="button" data-set="memory5090" data-value="${v}" class="${state.memory === v ? "is-active" : ""}">${v}</button>`).join("")}</div></div>
           <div class="config-field"><label>Cooling</label><div class="config-toggle">${["Air", "Liquid"].map(v => `<button type="button" data-set="cooling" data-value="${v}" class="${state.cooling === v ? "is-active" : ""}">${v}</button>`).join("")}</div></div>
@@ -46,7 +46,7 @@ if (configurator) {
   }
 
   function density() {
-    if (state.product === "5090ti") return state.memory === "48GB" ? 46 : 31;
+    if (state.product === "spartan-edge") return state.memory === "48GB" ? 46 : 31;
     const memoryScore = { 128: 24, 256: 42, 512: 66, 1024: 88 }[state.memory];
     const coreScore = state.cores * 6;
     const coolScore = { Air: 4, Liquid: 12, Immersion: 20 }[state.cooling];
@@ -97,7 +97,7 @@ if (configurator) {
     card.addEventListener("click", () => {
       state.product = card.dataset.product;
       cards.forEach((item) => item.classList.toggle("is-selected", item === card));
-      if (state.product === "5090ti") {
+      if (state.product === "spartan-edge") {
         state.memory = "24GB";
         state.cooling = "Air";
         state.interface = "PCIe";
@@ -124,7 +124,7 @@ const layerContent = {
   applications: ["Business Applications", "Helios, Aegis, and Nexus sit above the infrastructure. They turn model capacity into workflows for teams that need operational AI systems.", "Helios · Aegis · Nexus"],
   orchestration: ["Titan LLM + Orchestration", "Titan handles model routing, memory management, and cluster policy. It keeps workloads moving across the available compute.", "Titan LLM · Routing policy · Memory manager"],
   software: ["Infrastructure Software", "The infrastructure layer controls scheduling, telemetry, and autoscaling. It is the operational surface for the hardware fleet.", "Fleet control · Telemetry · Autoscaling"],
-  systems: ["Nucore GPU Systems", "The Vera Rubin system is the compute base, built on NVIDIA architecture and modified for agentic AI workloads.", "Vera Rubin · Modified NVIDIA base"]
+  systems: ["Nucore Compute Infrastructure", "Spartan is the compute base, built on custom silicon and modified for agentic AI workloads. Kronos extends the platform for mass inter-company inference.", "Spartan · Kronos · Custom silicon"]
 };
 
 document.querySelectorAll("[data-layer]").forEach((button) => {

@@ -36,7 +36,7 @@
                  "✓ Validated for genomics and protein-folding workloads.",
                  "✓ No shared tenancy, no third-party model hosting.",
                  "✓ Titan LLM weights stay under your control."],
-    defense:    ["✓ Air-gap-ready Vera Rubin clusters.",
+    defense:    ["✓ Air-gap-ready Spartan clusters.",
                  "✓ ITAR-aware, US-assembled supply chain.",
                  "✓ Classified-network compatible software stack.",
                  "✓ Sovereign weights, no cloud telemetry."],
@@ -53,7 +53,7 @@
                  "✓ Open access to silicon-level telemetry.",
                  "✓ Reservable hours for collaborators."],
     enterprise: ["✓ Predictable capex instead of variable cloud bill.",
-                 "✓ Titan LLM tuned to Vera Rubin silicon, included.",
+                 "✓ Titan LLM tuned to Spartan silicon, included.",
                  "✓ White-glove software suite — no MLOps build-out.",
                  "✓ Data sovereignty, no shared tenancy."],
   };
@@ -121,7 +121,7 @@
 
     // Update DOM
     const industryLabel = document.getElementById("calcIndustry").selectedOptions[0].textContent;
-    document.getElementById("resTitle").textContent = "Vera Rubin Deployment · " + industryLabel;
+    document.getElementById("resTitle").textContent = "Spartan Deployment · " + industryLabel;
     document.getElementById("resSubtitle").textContent = USE_CASE_COPY[useCase];
 
     document.getElementById("resUnits").textContent = nuUnits.toLocaleString();
