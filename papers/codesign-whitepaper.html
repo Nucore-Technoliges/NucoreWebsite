@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Why Agentic AI Needs Hardware and Software Designed Together | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag tag--accent">WHITEPAPER</span>
+      <span class="tag tag--neutral">TR-2026-03</span>
+    </div>
+    <h1>Why Agentic AI Needs Hardware and Software Designed Together</h1>
+    <p class="paper-byline">D. Brennan, A. Cheng · Nucore Technologies</p>
+    <p class="paper-id">February 2026 · TR-2026-03 · 18 pp.</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>18</strong><span>Pages</span></div>
+      <div class="paper-stat"><strong>2×</strong><span>Core performance claim</span></div>
+      <div class="paper-stat"><strong>2026</strong><span>Published</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Executive Summary</h2>
+      <p>Agentic AI — systems in which a language model calls tools, maintains state across multiple turns, and executes long-horizon reasoning loops — represents a qualitatively different workload from single-turn text generation. Yet today's infrastructure stack for deploying agentic AI consists largely of unmodified general-purpose GPU clusters running software designed for simple prompt-and-response tasks. This mismatch is not a temporary gap to be closed by incremental software optimization. It is a structural incompatibility between the architecture of commodity compute and the requirements of agentic workloads.</p>
+      <p>This whitepaper makes the case for co-designed hardware and software as the necessary and sufficient solution to this incompatibility. We describe the specific ways commodity GPU stacks fail for agentic AI, present the architectural principles behind the Nucore Spartan platform, and provide empirical evidence that co-designed infrastructure delivers the performance and cost characteristics that agentic AI workloads require.</p>
+
+      <h2>1. The Agentic Workload Profile</h2>
+      <p>A single-turn text generation task has a simple profile: one input sequence, one output sequence, brief compute burst, done. The KV cache is discarded after each request. Context windows are short. Batch sizes can be large because many users generate tokens simultaneously and independently.</p>
+      <p>An agentic task looks completely different. Consider a research synthesis agent tasked with reading 200 papers, identifying contradictions, and writing a summary. This agent might make 1,000+ model calls over the course of its reasoning, with each call building on the context accumulated by prior calls. By call 500, the context window contains hundreds of thousands of tokens of prior reasoning, tool outputs, and document excerpts. The KV cache for this context is enormous — tens of gigabytes — and must persist across every call in the sequence. If the cache is evicted and must be reloaded from host DRAM between calls, the overhead is catastrophic.</p>
+      <p>Three properties distinguish agentic workloads from simple inference:</p>
+      <ol>
+        <li><strong>Memory persistence:</strong> The KV cache must survive across model calls, not be discarded and reconstructed each time.</li>
+        <li><strong>Low per-step latency:</strong> The agent's reasoning speed is gated by per-step model call latency. A 100-step reasoning loop at 100ms per step takes 10 seconds; at 12ms, it takes 1.2 seconds.</li>
+        <li><strong>Long-horizon coherence:</strong> The model must maintain coherent reasoning over contexts of 100K+ tokens, requiring large in-memory attention states and precise numerical behavior across very long sequences.</li>
+      </ol>
+
+      <h2>2. How Commodity GPUs Fail for Agentic AI</h2>
+      <h3>2.1 Memory Eviction Under Pressure</h3>
+      <p>Standard GPU inference deployments are designed to maximize throughput across many concurrent sessions. The KV cache is managed as a shared memory pool: when the pool is full and a new request arrives, the least-recently-used session's cache is evicted to host DRAM to make room. This is correct behavior for maximizing multi-session throughput — but it is the wrong policy for an agentic session that is actively making sequential calls and cannot afford a 100+ ms reload each time it resumes.</p>
+      <h3>2.2 Tensor Core Dispatch Mismatch</h3>
+      <p>Commodity GPU tensor cores are designed for dense, regular matrix operations — the kind that dominate dense transformer attention and feed-forward layers in standard inference. Agentic workloads introduce irregular patterns: tool-use interrupts, variable-length context additions between steps, and sparse attention patterns over long contexts. These irregular patterns cause tensor core underutilization: tiles that cannot be filled because the workload arrives in bursts rather than steady streams.</p>
+      <h3>2.3 Software Stack Abstraction Mismatch</h3>
+      <p>The standard inference software stack (TensorRT-LLM, vLLM, TGI) is designed around a request-response abstraction: a request arrives, is scheduled, executes, and completes. The scheduler optimizes for request throughput. For agentic sessions, the request-response abstraction is wrong — an agent session is a long-running stateful process, not a sequence of independent requests. Optimizing for per-request throughput maximizes the wrong metric for agentic deployments.</p>
+
+      <h2>3. The Co-Design Solution</h2>
+      <h3>3.1 Design Principle: The Hardware Must Know the Workload</h3>
+      <p>Co-design means that hardware and software are developed with explicit knowledge of each other's constraints and opportunities. For agentic AI, this means the hardware must be aware of session state persistence (which sessions are active and how much KV cache they need), the software must be aware of hardware capabilities (which sessions can be kept warm in HBM and at what cost), and both must be designed around the agentic session model rather than the stateless request model.</p>
+      <h3>3.2 Spartan's Architectural Principles</h3>
+      <p>The four architectural principles behind Spartan for agentic AI are:</p>
+      <ul>
+        <li><strong>Memory-first sizing:</strong> 192 GB HBM3e per accelerator, sized to hold the complete KV cache for many concurrent agentic sessions simultaneously — not sized to hold the model weights plus one batch of activations.</li>
+        <li><strong>Persistent scratchpad:</strong> A designated HBM region protected from eviction, managed as a cross-call session scratchpad that the inference scheduler can read from and write to without PCIe traffic.</li>
+        <li><strong>Adaptive dispatch:</strong> Tensor-core dispatch that adapts to irregular workload arrivals — filling tiles from whichever session has accumulated enough tokens, rather than waiting for a fixed batch size.</li>
+        <li><strong>Session-aware scheduling:</strong> An inference scheduler with explicit knowledge of session state, KV cache residency, and reasoning loop structure, optimizing for session-level latency rather than request-level throughput.</li>
+      </ul>
+
+      <h2>4. Empirical Evidence</h2>
+      <p>We support the co-design argument with empirical measurements across several dimensions:</p>
+      <ul class="finding-list">
+        <li>8.3× lower per-step latency on 4,000-step reasoning loops versus H100 with KV offloading. (NCR-2026-01)</li>
+        <li>11.8 ms median TTFT at 1,024-session concurrency in production, versus 121 ms on equivalent H100 deployments. (NCR-2026-03)</li>
+        <li>2.01× throughput per dollar on representative 70B MoE inference workloads. (NCR-2026-04)</li>
+        <li>58% lower total cost of ownership at 24 months versus equivalent cloud-hosted deployments. (TR-2026-07)</li>
+      </ul>
+      <p>We acknowledge that these measurements are from Nucore deployments on Nucore hardware, and encourage independent verification. We have released reproducibility kits for all empirical claims and established a formal reproducibility program with academic compute centers (details in the individual papers).</p>
+
+      <h2>5. The Software Co-Design Layer</h2>
+      <p>Hardware co-design alone is not sufficient. The software stack must be co-designed to exploit the hardware's properties. For Nucore, this means:</p>
+      <ul>
+        <li><strong>Orion</strong> fine-tuning recipes that are calibrated to Spartan's tensor-core dispatch characteristics, not to a generic GPU target.</li>
+        <li><strong>Titan</strong> model weights that are tuned to exploit Spartan's HBM bandwidth profile and FP8 dispatch path.</li>
+        <li><strong>The reference scheduler</strong> that manages session state, KV cache residency, and batch construction with full knowledge of Spartan's hardware topology.</li>
+        <li><strong>Helios</strong> data pipelines that produce training data formatted for Spartan's streaming ingestion characteristics.</li>
+      </ul>
+      <p>Each layer of the software stack is aware of the hardware's properties and designed to exploit them, rather than treating the hardware as a black box that executes generic CUDA kernels.</p>
+
+      <h2>6. The Road Ahead</h2>
+      <p>We expect the importance of hardware-software co-design to increase as agentic AI workloads become more complex. Longer context windows (1M+ tokens), larger numbers of concurrent agents, and more complex tool-use patterns will all amplify the cost of the architectural mismatches we have described. The next generation of Nucore silicon is being designed with these workload trends in mind, with expanded persistent scratchpad capacity, higher NVLink bandwidth, and hardware support for the scheduling primitives that agentic frameworks require.</p>
+      <p>We also expect co-design to extend to the data layer. Helios is our first step toward data infrastructure that is co-designed with the training hardware, but we anticipate deeper integration between data pipeline characteristics and training efficiency as we instrument more frontier pretraining runs.</p>
+
+      <h2>Conclusion</h2>
+      <p>Agentic AI is not a software problem running on the same hardware as traditional inference. It is a new workload class that requires infrastructure designed around its specific requirements: memory persistence, low per-step latency, and session-aware scheduling. The commodity GPU stack, designed for the stateless request-response model, is structurally misaligned with this workload profile. Hardware-software co-design, as exemplified by the Spartan platform, is the solution.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Document type</h4>
+        <div class="cite-label" style="margin-top:8px;font-size:15px;">Technical whitepaper — 18 pages</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related research</h4>
+        <div class="sidebar-related">
+          <a href="kv-cache.html">Memory-Persistent Agent Loops</a>
+          <a href="ttft-production.html">Sub-12ms TTFT Production Study</a>
+          <a href="moe-codesign.html">Architectural Co-Design for MoE</a>
+          <a href="tco-study.html">TCO Field Study (TR-2026-07)</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Contact</h4>
+        <div class="sidebar-links">
+          <a href="../contact.html">→ Talk to us</a>
+          <a href="../products.html#spartan">→ Spartan product page</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Built for the workloads that matter.</h2>
+      <p>Hardware and software designed together for agentic AI — deployed on infrastructure you own.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Book a demo</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

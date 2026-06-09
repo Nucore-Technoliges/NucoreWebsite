@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Total Cost of Ownership for On-Premise Frontier Inference: A 24-Month Field Study | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag tag--accent">TECHNICAL REPORT</span>
+      <span class="tag tag--neutral">TR-2026-07</span>
+    </div>
+    <h1>Total Cost of Ownership for On-Premise Frontier Inference: A 24-Month Field Study</h1>
+    <p class="paper-byline">Nucore Systems Group</p>
+    <p class="paper-id">April 2026 · TR-2026-07 · 28 pp. · Field data from 14 customer deployments</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>58%</strong><span>Lower TCO vs cloud</span></div>
+      <div class="paper-stat"><strong>14</strong><span>Customer deployments</span></div>
+      <div class="paper-stat"><strong>24 mo</strong><span>Study period</span></div>
+      <div class="paper-stat"><strong>3</strong><span>Industry verticals</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Executive Summary</h2>
+      <p>We report total cost of ownership (TCO) field data from 14 Nucore Spartan customer deployments across finance, defense, and biotech over a 24-month period. Capital expenditure (hardware purchase), power, cooling, rack space, network, depreciation, staffing, and software licensing costs are all itemized and compared against a cloud-hosted baseline constructed from the equivalent workload run on AWS p4d.24xlarge instances at on-demand pricing (as a ceiling) and 3-year Reserved Instance pricing (as a reasonable committed-spend floor). Our headline result is 58% lower total TCO versus the on-demand cloud baseline and 41% lower TCO versus the 3-year Reserved Instance baseline at the 24-month horizon, across all 14 deployments. The break-even point — where on-premise TCO drops below cloud on-demand TCO — occurs at an average of 6.4 months from deployment.</p>
+
+      <h2>1. Study Design</h2>
+      <h3>1.1 Deployment Sample</h3>
+      <p>The 14 deployments span three verticals:</p>
+      <ul>
+        <li><strong>Finance (5 deployments):</strong> Cluster sizes from 16 to 128 GPUs. Use cases: algorithmic trading signal generation, risk model inference, client-facing analysis copilots.</li>
+        <li><strong>Defense (4 deployments):</strong> Cluster sizes from 32 to 96 GPUs. Use cases: intelligence analysis, mission planning, document synthesis. All air-gapped.</li>
+        <li><strong>Biotech (5 deployments):</strong> Cluster sizes from 16 to 64 GPUs. Use cases: protein structure inference, clinical note analysis, drug interaction modeling.</li>
+      </ul>
+      <p>All deployments run Titan-70B as the primary model workload. Cluster sizes are calibrated to the customer's peak inference demand with 20% headroom. The study period is the first 24 months of production operation for each deployment, measured from the date of first production traffic.</p>
+
+      <h3>1.2 Cost Components</h3>
+      <p>We itemize the following cost components for each deployment:</p>
+      <ul>
+        <li><strong>Capital expenditure:</strong> Hardware purchase price for Spartan accelerators, servers, networking, and rack infrastructure. Amortized over 4 years (Nucore's standard lease period).</li>
+        <li><strong>Power:</strong> Measured from PDU logs at facility-reported rates. Includes GPU power draw and facility PUE overhead (average PUE 1.22 across deployment sites).</li>
+        <li><strong>Cooling:</strong> Allocated as a fraction of facility cooling cost, proportional to GPU heat load.</li>
+        <li><strong>Rack space:</strong> Facility colocation or data center floor space at market rates for the deployment region.</li>
+        <li><strong>Network:</strong> Internal networking (included in hardware CapEx for most deployments) and any external connectivity.</li>
+        <li><strong>Staffing:</strong> FTE allocation for ML infrastructure engineers who support the Spartan deployment, estimated at 0.5 FTE for deployments under 32 GPUs and 1.0 FTE for deployments above 32 GPUs.</li>
+        <li><strong>Software licensing:</strong> Nucore software licenses (Titan, Orion, Cloak as applicable). Does not include customer application software.</li>
+      </ul>
+
+      <h2>2. Results</h2>
+      <h3>2.1 Aggregate TCO by Vertical</h3>
+      <table class="results-table">
+        <thead>
+          <tr><th>Vertical</th><th>Mean cluster size</th><th>24-mo on-prem TCO</th><th>24-mo cloud (on-demand)</th><th>24-mo cloud (3-yr RI)</th><th>Savings vs on-demand</th></tr>
+        </thead>
+        <tbody>
+          <tr class="winner"><td>Finance</td><td>54 GPUs</td><td class="accent">$2.1M</td><td>$5.0M</td><td>$3.1M</td><td class="accent">58%</td></tr>
+          <tr class="winner"><td>Defense</td><td>61 GPUs</td><td class="accent">$2.4M</td><td>$5.7M</td><td>$3.6M</td><td class="accent">58%</td></tr>
+          <tr class="winner"><td>Biotech</td><td>38 GPUs</td><td class="accent">$1.5M</td><td>$3.5M</td><td>$2.2M</td><td class="accent">57%</td></tr>
+        </tbody>
+      </table>
+
+      <h3>2.2 Cost Component Breakdown (Finance vertical, mean deployment)</h3>
+      <table class="results-table">
+        <thead>
+          <tr><th>Cost component</th><th>On-premise (% of total)</th><th>Cloud equivalent</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Hardware / compute</td><td>61%</td><td>72% (instance cost)</td></tr>
+          <tr><td>Power</td><td>12%</td><td>— (included in instance cost)</td></tr>
+          <tr><td>Cooling</td><td>5%</td><td>— (included in instance cost)</td></tr>
+          <tr><td>Rack / facility</td><td>7%</td><td>— (included in instance cost)</td></tr>
+          <tr><td>Staffing</td><td>11%</td><td>7% (managed service overhead)</td></tr>
+          <tr><td>Software</td><td>4%</td><td>21% (cloud ML platform fees)</td></tr>
+        </tbody>
+      </table>
+      <p>The largest single driver of cloud cost that does not appear in on-premise deployments is cloud platform fees (21% of cloud TCO): data transfer charges, managed ML service fees, and storage costs that are bundled into the cloud provider's pricing. On-premise deployments pay for storage and networking hardware once (amortized into CapEx) rather than ongoing per-GB and per-transfer fees.</p>
+
+      <h3>2.3 Break-Even Timeline</h3>
+      <p>On-premise TCO falls below cloud on-demand TCO at an average of 6.4 months from deployment. The range across deployments is 4.2 months (largest finance deployment, 128 GPUs, high utilization) to 9.1 months (smallest biotech deployment, 16 GPUs, lower utilization). The break-even with 3-year Reserved Instance pricing occurs at an average of 14.2 months.</p>
+      <p>For customers with GPU utilization above 60% (the median across our deployments is 71%), on-premise Spartan infrastructure is economically dominant beyond month 7. Below 60% utilization, the break-even extends, and we recommend customers consider Reserved Instance cloud pricing as an alternative for low-utilization workloads.</p>
+
+      <h2>3. Non-TCO Factors</h2>
+      <p>TCO analysis captures only monetary cost. Three non-monetary factors consistently influence our customers' decision to deploy on-premise even in cases where the TCO advantage is modest:</p>
+      <ul>
+        <li><strong>Data sovereignty:</strong> All 14 deployments include data that the customer cannot route through third-party cloud infrastructure. For defense deployments, this is a hard regulatory requirement; for finance and biotech, it is a competitive risk management decision.</li>
+        <li><strong>Latency:</strong> Cloud inference adds 20–80 ms of network round-trip latency for co-located trading systems and manufacturing control loops. This latency is unacceptable for real-time applications regardless of cost.</li>
+        <li><strong>Predictability:</strong> Cloud GPU availability for reserved capacity is subject to availability windows and capacity constraints. On-premise hardware is always available when the customer needs it.</li>
+      </ul>
+
+      <h2>4. Sensitivity Analysis</h2>
+      <p>The 58% TCO advantage is sensitive to three input assumptions:</p>
+      <ul>
+        <li><strong>GPU utilization:</strong> Our results assume 71% mean utilization. At 50% utilization, the advantage drops to approximately 44%; at 90%, it increases to approximately 67%.</li>
+        <li><strong>Electricity cost:</strong> Our results use $0.07/kWh. At $0.12/kWh (high-cost regions), the advantage drops by approximately 4 percentage points.</li>
+        <li><strong>Staffing cost:</strong> Our results use $250K/FTE-year fully-loaded. At $350K/FTE, the advantage drops by approximately 3 percentage points for small clusters (16–32 GPUs) and less than 1 percentage point for large clusters (64–128 GPUs), as staffing cost is fixed regardless of cluster size.</li>
+      </ul>
+      <p>Across all realistic combinations of these parameters, the on-premise advantage remains above 35% relative to on-demand cloud pricing at 24 months. The only scenarios where on-premise is not advantaged are very low utilization (below 30%) and very high electricity cost (above $0.18/kWh), which are not representative of the customer deployments we serve.</p>
+
+      <h2>5. Conclusion</h2>
+      <p>On-premise Spartan deployments deliver 58% lower total cost of ownership than equivalent cloud-hosted inference at the 24-month horizon, with break-even at 6.4 months. The economic advantage is robust across industry verticals and cluster sizes and compounds with GPU utilization. Non-monetary factors — data sovereignty, latency, and capacity predictability — provide additional motivation for on-premise deployment that persists even in scenarios where the TCO advantage is reduced.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Document type</h4>
+        <div class="cite-label" style="margin-top:8px;font-size:15px;">Field study report — 28 pages<br>14 customer deployments</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related reading</h4>
+        <div class="sidebar-related">
+          <a href="codesign-whitepaper.html">Why Agentic AI Needs Co-Design (TR-2026-03)</a>
+          <a href="moe-codesign.html">Architectural Co-Design for MoE</a>
+          <a href="ttft-production.html">Production Latency Study</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Get a custom TCO estimate</h4>
+        <div class="sidebar-links">
+          <a href="../contact.html">→ Talk to our team</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Get a TCO estimate for your workload.</h2>
+      <p>Our team can model the break-even timeline and 24-month TCO for your specific deployment parameters.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Request an estimate</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Architectural Co-Design for Sustained Throughput on Sparse MoE Workloads | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag tag--accent">FLAGSHIP · 2026</span>
+      <span class="tag">HARDWARE RESEARCH</span>
+      <span class="tag tag--neutral">NCR-2026-04</span>
+    </div>
+    <h1>Architectural Co-Design for Sustained Throughput on Sparse Mixture-of-Experts Workloads</h1>
+    <p class="paper-byline">A. Cheng, M. Patel, R. Kowalski, D. Brennan · Nucore Hardware Research</p>
+    <p class="paper-id">April 2026 · NCR-2026-04 · Submitted to NeurIPS 2026 Systems Track</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>312</strong><span>External citations</span></div>
+      <div class="paper-stat"><strong>2.0×</strong><span>Throughput per dollar</span></div>
+      <div class="paper-stat"><strong>96%</strong><span>Silicon utilization</span></div>
+      <div class="paper-stat"><strong>42%</strong><span>Energy reduction</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Abstract</h2>
+      <p>Sparse mixture-of-experts (MoE) architectures dominate frontier model design but punish commodity GPU clusters: routing imbalance leaves expert-parallel ranks under-utilized, and all-to-all collectives become the bottleneck long before compute saturates. We present the architectural modifications made to Nucore Spartan silicon — a re-tuned tensor-core dispatcher, expanded HBM3e capacity, and a re-architected NVLink fabric — that close the routing gap. Across a representative 70B-parameter MoE workload at 1,024-way concurrency, Spartan sustains 2,840 tokens per second per accelerator at 96% utilization, compared to 1,410 tok/s at 78% utilization on equivalent NVIDIA H100 deployments. We open-source the benchmark harness and our routing-imbalance methodology so external teams can reproduce the figures on their own clusters.</p>
+
+      <h2>1. Introduction</h2>
+      <p>The transition from dense transformer architectures to sparse mixture-of-experts (MoE) models has been one of the most consequential design shifts in large-scale AI over the past three years. Models such as Mixtral-8x7B, DeepSeek-MoE, and GPT-4 family variants use MoE layers to dramatically expand parameter counts without proportionally increasing compute per forward pass. The promise is compelling: at a given FLOP budget, MoE models outperform dense counterparts on most language understanding and generation benchmarks.</p>
+      <p>The reality on commodity silicon is more complicated. MoE routing introduces a structural imbalance problem: because tokens are dynamically dispatched to different expert modules, the distribution of work across GPU ranks is non-uniform and unpredictable. Expert-parallel deployments distribute expert weights across GPUs, requiring all-to-all collective communication whenever a token is routed to an expert on a different device. On standard NVLink configurations, this collective operation becomes the dominant bottleneck at moderate to high concurrency — often consuming 40–60% of wall-clock time on a forward pass that is nominally compute-bound.</p>
+      <p>We argue that this is not a software problem amenable to smarter routing algorithms alone. The root cause is a mismatch between the fixed, rigid dispatch paths of commodity tensor cores and the dynamic, load-imbalanced dispatch pattern of MoE routing. Routing algorithms can reduce imbalance at the token level, but they cannot eliminate it without constraining model expressivity. The hardware needs to meet the workload.</p>
+      <p>This paper describes the architectural changes in Nucore Spartan that address the MoE routing problem at the silicon level, and provides a full empirical characterization of the resulting performance improvement across representative workloads.</p>
+
+      <h2>2. Background and Related Work</h2>
+      <h3>2.1 MoE Architecture and Expert Parallelism</h3>
+      <p>In a sparse MoE layer, each input token is routed by a learned gating network to a subset of expert feed-forward networks (FFNs) — typically 2 of N experts, where N ranges from 8 to 64 in current frontier deployments. The routing decision is made independently for each token, and the selected experts may reside on different GPUs in an expert-parallel configuration. This introduces two sources of inefficiency: load imbalance across experts (some experts receive many more tokens than others), and all-to-all communication overhead to move token activations between devices.</p>
+      <h3>2.2 Prior Software Mitigations</h3>
+      <p>Several software-level approaches have been proposed to reduce MoE routing overhead. Expert-choice routing (Zhou et al., 2022) inverts the dispatch direction, allowing experts to select tokens rather than vice versa, which guarantees per-expert load balance but changes model semantics. Auxiliary load-balancing losses (Lepikhin et al., 2021; Fedus et al., 2022) encourage balanced routing during training but cannot guarantee it at inference. Buffer tokens (Zoph et al., 2022) absorb overflow tokens at the cost of additional compute. None of these approaches address the fundamental constraint that all-to-all collectives are bandwidth-limited on commodity interconnects.</p>
+      <h3>2.3 Hardware Interconnect Prior Work</h3>
+      <p>NVIDIA's NVLink provides high-bandwidth device-to-device communication, with NVLink 4.0 offering up to 900 GB/s of bidirectional bandwidth per GPU. However, the standard NVLink topology is designed for dense all-reduce patterns (used in data-parallel and tensor-parallel training) rather than the all-to-all pattern required for expert parallelism. The two patterns have fundamentally different traffic structures: all-reduce aggregates the same data across all ranks, while all-to-all routes distinct data to distinct destinations, requiring full mesh communication at scale.</p>
+
+      <h2>3. Spartan Architectural Modifications</h2>
+      <h3>3.1 Dispatcher-Aware Token Batching</h3>
+      <p>The primary modification in Spartan is a re-tuned tensor-core dispatcher that natively supports variable-width batch execution with dispatcher-aware token batching. In standard GPU tensor cores, a GEMM operation requires all operands in a tile to be ready before the tile begins executing. In MoE expert dispatch, this means a partially-filled tile from a high-traffic expert must wait for tokens routed to low-traffic experts to arrive — or execute with a partially occupied tile, wasting capacity.</p>
+      <p>Spartan's dispatcher maintains separate dispatch queues per expert and executes tiles as soon as a configurable fill threshold is reached (default: 75%), rather than waiting for a full tile. The threshold is tunable per layer at inference time. This reduces the expected wait time for tile execution from O(tile_size / mean_tokens_per_expert) to O(tile_size * fill_threshold / mean_tokens_per_expert), a reduction proportional to how aggressive the fill threshold is set relative to the routing distribution.</p>
+      <p>At the routing distributions we observe in deployed 70B MoE models (top-2 of 8, skewed toward 2–3 dominant experts across typical prompts), this modification alone reduces the mean tile occupancy wait by 64% versus stock tensor-core dispatch.</p>
+
+      <h3>3.2 Expanded HBM3e Capacity and Bandwidth</h3>
+      <p>Spartan ships with 192 GB of HBM3e per accelerator, compared to 80 GB on the NVIDIA H100 SXM5. The primary benefit for MoE inference is that more expert weight shards can be resident in fast memory simultaneously. At 70B parameter scales with standard BF16 weights, a 70B MoE model's complete expert weight set (excluding shared attention layers) requires approximately 110–130 GB depending on expert count. On H100 hardware, this requires either weight offloading or aggressive model sharding, both of which add latency.</p>
+      <p>With 192 GB available, a single Spartan accelerator can hold the complete expert set of a 70B MoE model in fast memory, eliminating expert weight reload latency entirely. We measure a 2.3× reduction in per-token latency for expert FFN layers between configurations with and without in-HBM expert residency.</p>
+
+      <h3>3.3 Re-Architected NVLink Fabric for All-to-All Patterns</h3>
+      <p>The NVLink fabric in Spartan is re-architected to support efficient all-to-all collective patterns in addition to the all-reduce patterns for which standard NVLink topologies are optimized. The key change is a routing table at the NVLink switch level that can be programmed with expert-to-device assignments, allowing the fabric to route expert dispatch messages without involving CPU-side coordination.</p>
+      <p>In standard configurations, expert dispatch all-to-all collectives must be orchestrated by the driver, with each device issuing send and receive operations for each expert it communicates with. On Spartan, the fabric switch handles routing autonomously once the routing table is loaded at model initialization, reducing per-collective coordination overhead from O(N_expert × N_device) to O(1) per dispatch event.</p>
+      <p>The combined effect of the dispatching modification and the fabric re-architecture is that expert all-to-all collectives saturate the full 900 GB/s NVLink bandwidth with a median tail latency of 12 ms, compared to 28 ms on equivalent H100 configurations where the collective is bandwidth-limited due to coordination overhead.</p>
+
+      <h2>4. Experimental Setup</h2>
+      <h3>4.1 Workloads</h3>
+      <p>We evaluate on three MoE workload configurations:</p>
+      <ul>
+        <li><strong>W1 (Representative Production):</strong> A 70B-parameter MoE model with top-2 routing of 8 experts, serving a mixed conversational workload at 1,024-way concurrency with context lengths between 1,024 and 8,192 tokens.</li>
+        <li><strong>W2 (Long-Context Agentic):</strong> The same model configuration serving an agentic workload with tool-use traces, context lengths between 16,384 and 65,536 tokens, 256-way concurrency.</li>
+        <li><strong>W3 (Batch Training):</strong> Training throughput on a 70B MoE model with global batch size 2,048, sequence length 4,096, gradient checkpointing enabled.</li>
+      </ul>
+      <h3>4.2 Baselines</h3>
+      <p>We compare against NVIDIA H100 SXM5 (80 GB HBM3, NVLink 4.0) clusters of equivalent GPU count, using TensorRT-LLM v0.8 with FP8 quantization enabled. We do not apply any MoE-specific software optimizations to the H100 baseline beyond what ships in the standard TensorRT-LLM release, as our goal is to characterize what commodity silicon delivers to a typical deployment team without specialized MoE optimization effort.</p>
+
+      <h2>5. Results</h2>
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Configuration</th>
+            <th>Hardware</th>
+            <th>Tok/s per GPU</th>
+            <th>Utilization</th>
+            <th>All-to-all latency (p50)</th>
+            <th>Energy per token</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="winner">
+            <td>W1 Production</td>
+            <td class="accent">Nucore Spartan</td>
+            <td class="accent">2,840</td>
+            <td class="accent">96%</td>
+            <td class="accent">12 ms</td>
+            <td class="accent">0.21 mJ</td>
+          </tr>
+          <tr>
+            <td>W1 Production</td>
+            <td>NVIDIA H100</td>
+            <td>1,410</td>
+            <td>78%</td>
+            <td>28 ms</td>
+            <td>0.36 mJ</td>
+          </tr>
+          <tr class="winner">
+            <td>W2 Long-Context</td>
+            <td class="accent">Nucore Spartan</td>
+            <td class="accent">1,940</td>
+            <td class="accent">93%</td>
+            <td class="accent">14 ms</td>
+            <td class="accent">0.28 mJ</td>
+          </tr>
+          <tr>
+            <td>W2 Long-Context</td>
+            <td>NVIDIA H100</td>
+            <td>820</td>
+            <td>61%</td>
+            <td>34 ms</td>
+            <td>0.52 mJ</td>
+          </tr>
+          <tr class="winner">
+            <td>W3 Training</td>
+            <td class="accent">Nucore Spartan</td>
+            <td class="accent">3,120 toks/s</td>
+            <td class="accent">94%</td>
+            <td>—</td>
+            <td class="accent">0.18 mJ</td>
+          </tr>
+          <tr>
+            <td>W3 Training</td>
+            <td>NVIDIA H100</td>
+            <td>1,640 toks/s</td>
+            <td>81%</td>
+            <td>—</td>
+            <td>0.38 mJ</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The headline result is a 2.01× throughput improvement per accelerator on the representative production workload (W1), driven by the combined effect of the dispatcher modification, in-HBM expert residency, and reduced all-to-all coordination overhead. The improvement is larger on the long-context workload (W2: 2.37×), where the cost of expert weight reloading on H100 is higher due to larger KV cache footprints competing for HBM bandwidth.</p>
+
+      <div class="highlight-box">
+        <p><strong>Key finding:</strong> The dominant driver of the throughput gap is not raw FLOP capacity — both Spartan and H100 have similar peak theoretical FLOP counts — but utilization. Spartan sustains 96% utilization on W1 versus 78% for H100. The 18 percentage point utilization gap accounts for approximately 1.4× of the observed throughput ratio; the remaining factor comes from reduced memory bandwidth contention due to the larger HBM pool.</p>
+      </div>
+
+      <h3>5.1 Routing Imbalance Analysis</h3>
+      <p>We instrument per-expert token counts across a 10,000-request sample of the production workload. On the H100 baseline, the coefficient of variation (CV) of tokens per expert per forward pass is 0.68, indicating high imbalance — the busiest expert receives on average 2.9× as many tokens as the least-busy expert. With Spartan's dispatcher-aware batching at a 75% fill threshold, the effective CV from the tile scheduler's perspective drops to 0.24, as the scheduler can draw from whichever expert queue has accumulated enough tokens to fill a tile, effectively smoothing the imbalance downstream of the routing decision.</p>
+
+      <h3>5.2 Energy Efficiency</h3>
+      <p>Energy per output token is reduced by 42% on W1 and 46% on W2. The improvement comes from two sources: higher utilization (more tokens produced per unit time at similar power draw) and the FP8 dispatch path in Spartan's modified tensor cores, which runs approximately 1.3× more energy-efficiently than stock H100 FP8 due to reduced flushing overhead in the accumulation path.</p>
+
+      <h2>6. Discussion</h2>
+      <p>Our results suggest that the commodity GPU stack is structurally misaligned with the MoE workload profile in two ways: tensor-core dispatch granularity assumes a fixed, known workload distribution, and interconnect fabric topologies are optimized for symmetric collective patterns rather than the asymmetric, expert-aware routing patterns MoE inference requires.</p>
+      <p>The modifications in Spartan address both misalignments at the hardware level, delivering improvements that we believe are difficult to recover through software-only approaches at the current scale of frontier MoE deployment. We anticipate that the gap will widen further as model sizes grow and expert counts increase, amplifying the cost of routing imbalance and all-to-all latency.</p>
+      <p>A limitation of our evaluation is that we test a single model family (70B MoE with top-2/8 routing). We expect the relative advantage to be larger for models with higher expert counts (e.g., 64 or 128 experts), where imbalance is statistically higher, and smaller for models with very low expert counts or dense architectures. We report results for additional configurations in the reproducibility kit.</p>
+
+      <h2>7. Conclusion</h2>
+      <p>We have presented three architectural modifications to the Nucore Spartan silicon that, in combination, deliver 2.01× sustained throughput per dollar and 42% lower energy per token on representative sparse MoE inference workloads compared to NVIDIA H100 clusters. The modifications — dispatcher-aware token batching, expanded HBM3e, and all-to-all-optimized NVLink fabric — address root causes at the hardware level rather than symptoms at the software level.</p>
+      <p>We release the benchmark harness, routing-imbalance instrumentation, and all raw performance traces as open-source artifacts. We hope these tools lower the barrier for external teams to characterize MoE efficiency on their own hardware and workloads.</p>
+
+      <h2 id="bibtex">BibTeX</h2>
+      <div class="bibtex-block">@article{cheng2026moecodesign,
+  title={Architectural Co-Design for Sustained Throughput on
+         Sparse Mixture-of-Experts Workloads},
+  author={Cheng, A. and Patel, M. and Kowalski, R. and Brennan, D.},
+  journal={Nucore Hardware Research},
+  year={2026},
+  note={NCR-2026-04}
+}</div>
+
+      <h2 id="reproducibility">Reproducibility</h2>
+      <p>The benchmark harness, routing-imbalance instrumentation scripts, and all raw performance traces used in this paper are available at <code>github.com/nucore-research/moe-codesign-bench</code>. The repository includes setup instructions for reproducing the H100 baseline figures on standard H100 SXM5 hardware, as well as documentation for adapting the benchmark to other GPU architectures.</p>
+      <p>Requests for access to the Spartan hardware for independent reproducibility studies can be submitted via <a href="../contact.html" style="color:var(--accent)">contact.html</a>. We have established a formal reproducibility program with three academic compute centers; details are in the repository README.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Citations</h4>
+        <div class="cite-count">312</div>
+        <div class="cite-label">external citations as of June 2026</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Resources</h4>
+        <div class="sidebar-links">
+          <a href="#bibtex">→ BibTeX</a>
+          <a href="#reproducibility">→ Reproducibility kit</a>
+          <a href="../contact.html">→ Request hardware access</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related papers</h4>
+        <div class="sidebar-related">
+          <a href="kv-cache.html">Memory-Persistent Agent Loops on Custom Silicon</a>
+          <a href="ttft-production.html">Sub-12ms TTFT at 1,024-Sequence Concurrency</a>
+          <a href="fp8-energy.html">Energy-Efficient FP8 Pathways for Frontier Model Training</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Run your workload on Spartan.</h2>
+      <p>Talk to us about a pilot deployment or benchmark run on production Spartan hardware.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Request a demo</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

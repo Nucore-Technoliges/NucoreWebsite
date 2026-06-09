@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orion: An Autonomous Agent for End-to-End Language Model Fine-Tuning | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag">ORION TEAM</span>
+      <span class="tag tag--neutral">NCR-2026-02</span>
+    </div>
+    <h1>Orion: An Autonomous Agent for End-to-End Language Model Fine-Tuning</h1>
+    <p class="paper-byline">K. Olsen, P. Ramaswamy, T. Bauer · Nucore Orion Team</p>
+    <p class="paper-id">February 2026 · NCR-2026-02</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>21/24</strong><span>Benchmarks won</span></div>
+      <div class="paper-stat"><strong>6</strong><span>Domain corpora</span></div>
+      <div class="paper-stat"><strong>60%</strong><span>Below cloud training cost</span></div>
+      <div class="paper-stat"><strong>221</strong><span>External citations</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Abstract</h2>
+      <p>We introduce Orion, an autonomous agent that performs the complete fine-tuning lifecycle for open-weight large language models: dataset curation and deduplication, hyperparameter search, reinforcement learning from human feedback (RLHF) or direct preference optimization (DPO) training, automated evaluation against domain benchmarks, and one-click deployment to a Titan inference fleet. Orion ships with hardware-aware fine-tuning recipes that exploit Spartan's expanded HBM3e and modified tensor-core paths, delivering up to 60% cost reduction versus equivalent cloud training runs. We report end-to-end results on six domain corpora — finance, biotech, defense, legal, code, and clinical notes — and demonstrate that Orion-tuned variants of Titan-7B and Titan-70B outperform manually-tuned baselines on 21 of 24 evaluation benchmarks, with mean improvement of 8.4 points across all benchmarks and domains.</p>
+
+      <h2>1. Introduction</h2>
+      <p>Fine-tuning a large language model for a specific domain or task requires expertise in data curation, distributed training, hyperparameter optimization, and model evaluation — a combination that is rare even in well-staffed AI teams. The current state of practice requires a specialized MLOps engineer (or team) to manage each stage of the pipeline, making fine-tuning inaccessible to most organizations that lack dedicated ML infrastructure talent.</p>
+      <p>Orion is our solution to this problem. It is an autonomous agent that manages the full fine-tuning lifecycle, making intelligent decisions at each stage based on observed intermediate results — data quality metrics, loss curves, evaluation scores — without requiring human intervention between stages. A user interacts with Orion by specifying a target domain, providing a dataset (or pointing to a data source that Helios can process), selecting a base model, and defining an evaluation suite. Orion handles the rest.</p>
+      <p>The key technical challenge in building an autonomous fine-tuning agent is making reliable decisions at stages where the right choice depends on observed data. Hyperparameter selection is the most prominent example: optimal learning rate, batch size, and LoRA rank depend on the dataset characteristics (size, diversity, domain difficulty) and the base model checkpoint in ways that are not well-predicted by prior art. Orion uses a Bayesian optimization loop over a hardware-aware hyperparameter search space to find good configurations with far fewer trial runs than grid or random search.</p>
+
+      <h2>2. System Architecture</h2>
+      <h3>2.1 Pipeline Stages</h3>
+      <p>Orion's pipeline has five stages, each implemented as an autonomous sub-agent with access to the shared state from prior stages:</p>
+      <ol>
+        <li><strong>Data Curation Agent:</strong> Receives raw dataset paths, interfaces with Helios for deduplication and quality filtering, and produces a curated training corpus with per-example quality scores. The agent makes decisions about which quality thresholds to apply based on dataset size (smaller datasets require less aggressive filtering to preserve training signal) and domain (technical domains require domain-specific quality models).</li>
+        <li><strong>Hyperparameter Search Agent:</strong> Proposes, executes, and evaluates short training runs (2–5% of full training compute) to identify promising hyperparameter configurations. Uses a Tree-structured Parzen Estimator (TPE) over a hardware-aware search space that constrains proposals to configurations that fit in the available HBM without gradient checkpointing, minimizing memory management overhead.</li>
+        <li><strong>Training Agent:</strong> Executes the full training run with the configuration identified by the search agent. Monitors loss curves, gradient norms, and throughput telemetry in real time and adjusts the learning rate schedule if early stopping criteria are triggered. Supports LoRA, full SFT, RLHF, and DPO fine-tuning methods.</li>
+        <li><strong>Evaluation Agent:</strong> Runs the trained checkpoint against a configurable suite of benchmarks — standardized domain evals, custom user-supplied test sets, and automated red-teaming for safety properties. Produces per-domain, per-capability, and per-failure-mode breakdowns.</li>
+        <li><strong>Deployment Agent:</strong> Promotes passing checkpoints to the Titan inference fleet. Handles sharding (splitting model weights across inference GPUs), KV-cache warmup for common prompt prefixes, and canary rollout with automated rollback if live traffic metrics degrade.</li>
+      </ol>
+
+      <h3>2.2 Hardware-Aware Recipes</h3>
+      <p>Orion's fine-tuning recipes are hardware-aware: they are designed to exploit specific properties of the Spartan accelerator that are not exploited by general-purpose fine-tuning frameworks. The key adaptations are:</p>
+      <ul>
+        <li>LoRA adapters are initialized using the principal components of the Spartan-measured activation distribution at the target layers, rather than random initialization. This warm-starts the adapter in the subspace where the base model is most uncertain about the target domain, reducing convergence time by 34% on average.</li>
+        <li>Gradient accumulation is synchronized with Spartan's tile scheduler state to avoid gradient accumulation steps that would require flushing in-progress tensor-core tiles. This eliminates a source of throughput variability that affects standard training loops.</li>
+        <li>The full SFT recipe uses a block-diagonal structure for the optimizer state (AdamW momentum and variance), aligned to Spartan's HBM memory pages. This reduces optimizer state memory by 18% versus standard unstructured storage, allowing larger effective batch sizes within the same HBM footprint.</li>
+      </ul>
+
+      <h2>3. Evaluation</h2>
+      <h3>3.1 Domain Corpora and Benchmarks</h3>
+      <p>We evaluate Orion on six domain fine-tuning tasks, each using a representative dataset and domain-specific evaluation suite:</p>
+      <table class="results-table">
+        <thead>
+          <tr><th>Domain</th><th>Dataset size</th><th>Base model</th><th>Method</th><th>Benchmark</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Finance</td><td>84M tokens</td><td>Titan-70B</td><td>LoRA + DPO</td><td>FinanceBench</td></tr>
+          <tr><td>Biotech</td><td>230M tokens</td><td>Titan-70B</td><td>Full SFT</td><td>BioASQ-11B</td></tr>
+          <tr><td>Defense</td><td>41M tokens</td><td>Titan-7B</td><td>LoRA</td><td>Internal tactical eval</td></tr>
+          <tr><td>Legal</td><td>160M tokens</td><td>Titan-70B</td><td>Full SFT + RLHF</td><td>LegalBench</td></tr>
+          <tr><td>Code</td><td>520M tokens</td><td>Titan-70B</td><td>Full SFT</td><td>HumanEval + SWE-bench</td></tr>
+          <tr><td>Clinical</td><td>190M tokens</td><td>Titan-70B</td><td>Full SFT + RLHF</td><td>MedQA + ClinicalBench</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3.2 Benchmark Results</h3>
+      <p>We compare Orion-tuned models against two baselines: (a) the untuned Titan base model, and (b) manually-tuned fine-tuned variants prepared by domain experts using standard fine-tuning toolkits (HuggingFace TRL, Axolotl) on equivalent cloud GPU hardware.</p>
+      <ul class="finding-list">
+        <li>Orion-tuned Titan-70B outperforms manually-tuned baseline on 21 of 24 evaluation benchmarks (7 sub-tasks per domain, 24 total comparisons across the 3 main evaluation domains tested).</li>
+        <li>Mean improvement over manually-tuned baseline: +8.4 benchmark points (absolute) averaged across all passing benchmarks.</li>
+        <li>Largest gains on Clinical (+14.2 points on MedQA), Legal (+11.8 on LegalBench strict accuracy), and Code (+9.1 on SWE-bench resolved rate).</li>
+        <li>Training cost on Spartan via Orion is 58% lower than equivalent cloud GPU runs (AWS p4d.24xlarge at on-demand pricing), accounting for full end-to-end cost including hyperparameter search runs.</li>
+      </ul>
+
+      <h2>4. Discussion</h2>
+      <p>The consistent outperformance of Orion-tuned models over manually-tuned baselines is perhaps the most surprising result in this paper. We expected the autonomous agent to approach — but not exceed — expert-level performance, since the search is ultimately over the same hyperparameter space a human expert would explore. The source of the improvement appears to be the hardware-aware LoRA initialization and the optimizer state alignment, which are not part of any standard fine-tuning framework and which a manual process would not naturally discover.</p>
+      <p>The three benchmarks where Orion does not win (3 of 24) are two Finance sub-tasks and one Defense sub-task. Post-hoc analysis suggests the Finance failures result from the evaluation prompts containing time-sensitive market data that our training set did not adequately represent. The Defense failure is attributable to a domain-specific terminology convention in the evaluation set that differs from the training data vocabulary.</p>
+
+      <h2>5. Conclusion</h2>
+      <p>Orion demonstrates that the full fine-tuning lifecycle can be automated with an autonomous agent that makes reliable decisions at each pipeline stage. The combination of hardware-aware recipes, autonomous hyperparameter search, and integrated evaluation produces fine-tuned models that outperform manually-tuned counterparts at substantially lower cost. We believe autonomous fine-tuning agents will become standard infrastructure for any organization deploying domain-adapted LLMs at scale.</p>
+
+      <h2 id="bibtex">BibTeX</h2>
+      <div class="bibtex-block">@article{olsen2026orion,
+  title={Orion: An Autonomous Agent for End-to-End
+         Language Model Fine-Tuning},
+  author={Olsen, K. and Ramaswamy, P. and Bauer, T.},
+  journal={Nucore Orion Team},
+  year={2026},
+  note={NCR-2026-02}
+}</div>
+
+      <h2 id="recipes">Code &amp; Fine-Tuning Recipes</h2>
+      <p>Orion's hardware-aware fine-tuning recipes for LoRA, full SFT, RLHF, and DPO are available at <code>github.com/nucore-research/orion-recipes</code>. The repository includes hyperparameter ranges, expected wall-clock time on 32-GPU Spartan racks, and benchmark deltas relative to base checkpoints for all six domain corpora evaluated in this paper.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Citations</h4>
+        <div class="cite-count">221</div>
+        <div class="cite-label">external citations as of June 2026</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Resources</h4>
+        <div class="sidebar-links">
+          <a href="#bibtex">→ BibTeX</a>
+          <a href="#recipes">→ Fine-tuning recipes</a>
+          <a href="../products.html#orion">→ Orion product page</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related papers</h4>
+        <div class="sidebar-related">
+          <a href="helios.html">Helios: Scalable Data Annotation Engine</a>
+          <a href="rlhf.html">Hardware-Aware RLHF</a>
+          <a href="kv-cache.html">Memory-Persistent Agent Loops</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Fine-tune your model on Orion.</h2>
+      <p>Point Orion at your dataset and get a production-ready model without an MLOps team.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Get started</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

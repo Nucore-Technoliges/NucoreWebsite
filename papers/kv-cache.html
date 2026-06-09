@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Memory-Persistent Agent Loops on Custom Silicon | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag">SYSTEMS GROUP</span>
+      <span class="tag tag--neutral">NCR-2026-01</span>
+    </div>
+    <h1>Memory-Persistent Agent Loops on Custom Silicon: Eliminating the KV-Cache Reload Penalty</h1>
+    <p class="paper-byline">D. Brennan, S. Iyer, A. Cheng · Nucore Systems Group</p>
+    <p class="paper-id">January 2026 · NCR-2026-01</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>8.3×</strong><span>Lower per-step latency</span></div>
+      <div class="paper-stat"><strong>4,000</strong><span>Step reasoning loops</span></div>
+      <div class="paper-stat"><strong>192 GB</strong><span>Persistent KV pool</span></div>
+      <div class="paper-stat"><strong>167</strong><span>External citations</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Abstract</h2>
+      <p>Long-horizon agents pay a hidden cost on commodity hardware: every recursive call to the language model reloads the key-value (KV) cache from host DRAM into GPU HBM, dominating per-step latency once the context window exceeds a few thousand tokens. We characterize this reload penalty empirically across 70B-parameter model deployments on NVIDIA H100 hardware, and describe the persistent-cache architecture in Nucore Spartan — an expanded 192 GB HBM3e pool addressable as a unified scratchpad across model calls — that eliminates it. We present empirical measurements across agentic reasoning loops of up to 4,000 tool-augmented steps. The cache-resident path delivers 8.3× lower median per-step latency relative to a tuned H100 baseline. At 4,000-step loops, the cumulative time savings from persistent caching reduce total reasoning loop wall-clock time by 6.9×.</p>
+
+      <h2>1. Introduction</h2>
+      <p>The key insight behind transformer attention — that past context can be cached as key-value pairs and reused without recomputation — is well established. What is less appreciated in the systems community is that KV cache residency in fast GPU memory is not guaranteed across model calls. In a standard GPU inference deployment, the KV cache for a given session lives in GPU HBM during the session but may be evicted to host DRAM (or discarded entirely) between calls if the HBM is needed for other sessions. This is not a bug; it is the correct behavior for maximizing multi-session throughput on memory-constrained hardware.</p>
+      <p>For single-session agentic workloads — where a single reasoning loop makes hundreds or thousands of sequential model calls, each building on the context accumulated by prior calls — the eviction-and-reload behavior is devastating. Each reload requires a PCIe transfer of tens of gigabytes of KV state from host DRAM, taking 100–300 ms on standard PCIe 5.0 connections. At 4,000 reasoning steps, this reload penalty accumulates to 400–1200 seconds of pure data transfer overhead.</p>
+      <p>This paper quantifies the problem, describes Spartan's architectural solution, and provides empirical measurements across representative agentic workloads.</p>
+
+      <h2>2. Quantifying the Reload Penalty</h2>
+      <h3>2.1 KV Cache Size at Scale</h3>
+      <p>For a Titan-70B model in BF16, the KV cache occupies approximately 2.1 MB per token per layer, or about 140 MB per token across all 80 attention layers. A context window of 4,096 tokens occupies approximately 573 GB of KV state — far exceeding the 80 GB HBM capacity of an H100. Even with tensor parallelism across 8 GPUs (960 GB total HBM), serving a single session with a 4,096-token context consumes over half the available HBM, leaving little room for other sessions or model weights.</p>
+      <p>In practice, production systems address this by quantizing the KV cache (typically INT8 or FP8), reducing storage by 2–4×, and by offloading the KV cache to host DRAM for inactive sessions. The offloading incurs a reload cost when the session resumes. We measure this cost directly.</p>
+
+      <h3>2.2 Measured Reload Latency</h3>
+      <p>We measure KV cache reload latency on a 4-GPU H100 SXM5 node with PCIe 5.0 host interconnect, serving Titan-70B with INT8 KV quantization. At context lengths from 1,024 to 16,384 tokens:</p>
+      <table class="results-table">
+        <thead>
+          <tr><th>Context length (tokens)</th><th>KV cache size (INT8)</th><th>PCIe reload latency</th><th>As % of decode time (1 step)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1,024</td><td>72 GB</td><td>18 ms</td><td>12%</td></tr>
+          <tr><td>4,096</td><td>286 GB</td><td>71 ms</td><td>47%</td></tr>
+          <tr><td>8,192</td><td>573 GB</td><td>141 ms</td><td>94%</td></tr>
+          <tr><td>16,384</td><td>1,146 GB</td><td>284 ms</td><td>189%</td></tr>
+        </tbody>
+      </table>
+      <p>At 8,192-token contexts (common in agentic workloads with extensive tool-use traces), KV reload takes 141 ms — nearly equal to the actual decode time for a single reasoning step. At 16,384 tokens, reload latency exceeds decode time, meaning that an agent spending most of its loop in the 16K context range would spend more than half its total time transferring data, not computing.</p>
+
+      <h2>3. Spartan's Persistent Cache Architecture</h2>
+      <h3>3.1 HBM3e Pool as Unified Scratchpad</h3>
+      <p>Spartan provides 192 GB of HBM3e per accelerator, addressable as a unified memory pool. Unlike standard GPU memory management where the KV cache competes with model weights, activation buffers, and gradient state for the same physical memory, Spartan's memory controller supports a partitioned addressing mode in which a configurable region of HBM is designated as a persistent KV scratchpad — not subject to eviction under memory pressure from other workloads.</p>
+      <p>The persistent scratchpad is managed by the inference scheduler (our reference implementation from [NCR-2026-03]) as a least-recently-used (LRU) cache of session KV state. Session state is evicted from the scratchpad only when the scratchpad is full and a new session requires space. Unlike host-DRAM-backed eviction, in-HBM LRU eviction is instantaneous — evicted state is simply deallocated in the memory controller, not written to a slower memory tier.</p>
+
+      <h3>3.2 Cross-Call KV Persistence</h3>
+      <p>When a session makes a new model call, the scheduler checks whether the session's KV state is resident in the persistent scratchpad. If resident (a "warm hit"), the prefill step is skipped entirely — the model picks up from the cached KV state and generates new tokens immediately. If not resident (a "cold miss"), the scratchpad is searched for the longest matching prefix (from the current or a previous session), and only the delta between the cached prefix and the current full context needs to be prefilled.</p>
+      <p>The warm-hit path eliminates KV reload latency entirely. The cold-miss-with-prefix path reduces reload cost proportional to the fraction of context that must be prefilled: at a 90% cache hit rate on the prefix (common in agentic loops where most of the context is the accumulated tool-use history), only 10% of the full context requires prefill, reducing the effective reload cost by 10× versus full reload.</p>
+
+      <h2>4. Results on Long-Horizon Agent Loops</h2>
+      <h3>4.1 Benchmark: 4,000-Step Reasoning Loops</h3>
+      <p>We evaluate on a synthetic benchmark of 100 long-horizon reasoning tasks requiring between 500 and 4,000 model calls per task. Each task uses the ReAct agent framework with access to 12 tools (web search, code execution, document retrieval, calculator, etc.). Context length grows monotonically as the agent accumulates tool outputs.</p>
+      <ul class="finding-list">
+        <li>Median per-step latency on Spartan (warm cache): 9.2 ms vs 76.4 ms on H100 with KV offloading. 8.3× improvement.</li>
+        <li>At 4,000-step loops, total wall-clock time: 62 minutes on Spartan vs 7.1 hours on H100. 6.9× improvement.</li>
+        <li>Spartan's warm-hit rate across the benchmark: 91.4% (session KV state found in persistent scratchpad).</li>
+        <li>Task completion rate at a 2-hour wall-clock budget: 94% on Spartan vs 31% on H100 (tasks exceeding 2 hours counted as incomplete).</li>
+      </ul>
+
+      <h2>5. Discussion</h2>
+      <p>The 8.3× per-step latency improvement at 4K-step loops directly enables classes of agentic AI applications that are practically infeasible on commodity hardware. A research synthesis agent that processes 500 documents in a single reasoning session, a software debugging agent that traces 2,000 execution steps, or a financial modeling agent that iterates over a month of market data — all of these require long-horizon loops where the KV reload penalty accumulates to hours on commodity hardware.</p>
+      <p>We argue that memory persistence is the most consequential architectural property for agentic AI workloads, ahead of raw FLOP throughput. An agent's ability to reason over long contexts without losing speed is what enables the qualitatively different behaviors — self-correction, multi-step planning, extended memory — that distinguish frontier agentic systems from simple prompt-and-response loops.</p>
+
+      <h2>6. Conclusion</h2>
+      <p>We have quantified the KV-cache reload penalty on commodity GPU hardware and demonstrated that Spartan's persistent HBM3e pool eliminates it, delivering 8.3× lower per-step latency and enabling reasoning loops of up to 4,000 steps that complete 6.9× faster than on equivalent H100 clusters. This work motivates the architectural thesis behind Spartan: that agentic AI workloads require hardware designed for memory persistence, not just peak FLOP throughput.</p>
+
+      <h2 id="bibtex">BibTeX</h2>
+      <div class="bibtex-block">@article{brennan2026kvcache,
+  title={Memory-Persistent Agent Loops on Custom Silicon:
+         Eliminating the KV-Cache Reload Penalty},
+  author={Brennan, D. and Iyer, S. and Cheng, A.},
+  journal={Nucore Systems Group},
+  year={2026},
+  note={NCR-2026-01}
+}</div>
+
+      <h2 id="microbenchmarks">Microbenchmarks</h2>
+      <p>The benchmark harness for KV-cache reload measurement, including scripts for measuring PCIe transfer rates on H100 hardware and HBM scratchpad performance on Spartan, is available at <code>github.com/nucore-research/kv-persist-bench</code>. The 4,000-step reasoning loop benchmark using the ReAct framework is included as a standalone evaluation suite.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Citations</h4>
+        <div class="cite-count">167</div>
+        <div class="cite-label">external citations as of June 2026</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Resources</h4>
+        <div class="sidebar-links">
+          <a href="#bibtex">→ BibTeX</a>
+          <a href="#microbenchmarks">→ Microbenchmarks</a>
+          <a href="../products.html#spartan">→ Spartan product page</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related papers</h4>
+        <div class="sidebar-related">
+          <a href="ttft-production.html">Sub-12ms TTFT at 1,024-Sequence Concurrency</a>
+          <a href="moe-codesign.html">Architectural Co-Design for MoE Workloads</a>
+          <a href="rlhf.html">Hardware-Aware RLHF</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Run long-horizon agents at full speed.</h2>
+      <p>Spartan's persistent cache architecture enables agentic loops that commodity hardware can't sustain.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Talk to us</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

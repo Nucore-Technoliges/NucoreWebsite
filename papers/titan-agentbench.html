@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Benchmarking Titan-405B Against Frontier Open-Weight Models on Agentic Reasoning Suites | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag tag--accent">TECHNICAL REPORT</span>
+      <span class="tag tag--neutral">TR-2026-09</span>
+    </div>
+    <h1>Benchmarking Titan-405B Against Frontier Open-Weight Models on Agentic Reasoning Suites</h1>
+    <p class="paper-byline">Nucore Titan Research</p>
+    <p class="paper-id">May 2026 · TR-2026-09 · 42 pp.</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>405B</strong><span>Parameter model</span></div>
+      <div class="paper-stat"><strong>3</strong><span>Benchmark suites</span></div>
+      <div class="paper-stat"><strong>42</strong><span>Pages</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Executive Summary</h2>
+      <p>We present a like-for-like evaluation of Titan-405B against four leading open-weight frontier models on three agentic reasoning benchmarks: AgentBench-Hard, ReAct-100, and the Nucore Long-Horizon Suite (NLHS). Our evaluation is designed to measure model quality on agentic tasks specifically — multi-step reasoning, tool use, long-context coherence, and self-correction — rather than the single-turn language understanding tasks that dominate most public LLM leaderboards.</p>
+      <p>Titan-405B achieves the highest overall score on all three benchmark suites, with particularly strong performance on NLHS (the 1,000+ step reasoning tasks that most directly reflect the agentic deployment scenarios Titan is optimized for). We provide per-task breakdowns, failure-mode analysis, and a discussion of why agentic reasoning resists the naive scaling that produces rapid improvements on static language benchmarks.</p>
+
+      <h2>1. Benchmark Descriptions</h2>
+      <h3>1.1 AgentBench-Hard</h3>
+      <p>AgentBench-Hard (Liu et al., 2023, updated 2025) is a collection of 130 tasks requiring multi-step reasoning, tool use, and decision-making in interactive environments. Tasks include database query composition, operating system command generation, web navigation, knowledge-intensive Q&A with retrieval, and collaborative planning with simulated partners. The "Hard" split removes tasks solvable by single-step lookup, requiring at least 5 model calls per task.</p>
+      <h3>1.2 ReAct-100</h3>
+      <p>ReAct-100 is our internal benchmark of 100 knowledge-intensive tasks requiring the Reasoning + Acting (ReAct) framework: iterative search, read, and reason steps to reach a final answer. Tasks are drawn from a diverse range of domains (science, law, history, technical troubleshooting) and require between 10 and 40 tool calls to complete. Success is measured as final answer accuracy; partial credit is not awarded.</p>
+      <h3>1.3 Nucore Long-Horizon Suite (NLHS)</h3>
+      <p>NLHS is a 50-task benchmark we developed specifically to evaluate performance on long-horizon agentic tasks that cannot be solved within a fixed context window or a fixed number of steps. Tasks include multi-document synthesis (reading 50+ source documents), code refactoring across a 10,000-line codebase, extended negotiation simulation (100+ turns), and multi-phase scientific experiment planning. The benchmark has no fixed time limit; tasks are scored on final output quality evaluated by a judge model (Titan-405B, in a separate held-out judge configuration).</p>
+
+      <h2>2. Models Evaluated</h2>
+      <p>We evaluate the following models at their maximum available parameter counts:</p>
+      <ul>
+        <li><strong>Titan-405B</strong> (Nucore, deployed on Spartan, 1,024K context)</li>
+        <li><strong>Llama-3-405B</strong> (Meta, deployed on H100, 128K context)</li>
+        <li><strong>Qwen-2.5-72B</strong> (Alibaba, deployed on H100, 128K context)</li>
+        <li><strong>Mixtral-8x22B</strong> (Mistral AI, deployed on H100, 64K context)</li>
+        <li><strong>DeepSeek-V2-236B</strong> (DeepSeek, deployed on H100, 128K context)</li>
+      </ul>
+      <p>All models run with their default inference configurations. We do not apply any model-specific prompt engineering beyond the task-specific system prompts that each benchmark specifies. ReAct-style tool use is enabled for all models on benchmarks that use it.</p>
+
+      <h2>3. Results</h2>
+      <table class="results-table">
+        <thead>
+          <tr><th>Model</th><th>AgentBench-Hard</th><th>ReAct-100</th><th>NLHS</th><th>Mean</th></tr>
+        </thead>
+        <tbody>
+          <tr class="winner"><td class="accent">Titan-405B</td><td class="accent">72.3%</td><td class="accent">81.0%</td><td class="accent">68.4%</td><td class="accent">73.9%</td></tr>
+          <tr><td>DeepSeek-V2-236B</td><td>68.1%</td><td>74.2%</td><td>58.2%</td><td>66.8%</td></tr>
+          <tr><td>Llama-3-405B</td><td>65.4%</td><td>72.1%</td><td>51.6%</td><td>63.0%</td></tr>
+          <tr><td>Qwen-2.5-72B</td><td>61.2%</td><td>68.4%</td><td>47.3%</td><td>58.9%</td></tr>
+          <tr><td>Mixtral-8x22B</td><td>54.8%</td><td>61.7%</td><td>38.1%</td><td>51.5%</td></tr>
+        </tbody>
+      </table>
+
+      <p>Titan-405B achieves the highest score on all three benchmarks and all sub-task categories except one (ReAct-100 historical knowledge, where DeepSeek-V2 ties). The gap is largest on NLHS (68.4% vs 58.2% for the next best model), which we attribute to two factors: Titan's 1,024K context window (versus 128K for most competitors) allowing it to process the full context of multi-document tasks, and the persistent KV-cache architecture on Spartan enabling it to maintain coherent reasoning state across the extended tool-use sequences NLHS requires.</p>
+
+      <h2>4. Failure Mode Analysis</h2>
+      <p>We categorize task failures across all models into five failure modes:</p>
+      <ul>
+        <li><strong>Context truncation:</strong> Model fails because the task requires attending to content beyond its context window. Titan has the lowest rate (2.1%); Mixtral has the highest (18.4%).</li>
+        <li><strong>Tool call error:</strong> Model generates an incorrectly formatted or semantically invalid tool call. All models show similar rates (4–8%).</li>
+        <li><strong>Reasoning loop (stuck):</strong> Model enters a repetitive loop without making progress. Titan and DeepSeek show lowest rates; smaller models show higher rates.</li>
+        <li><strong>Early termination:</strong> Model terminates reasoning before completing the task, incorrectly declaring completion. Varies widely; Titan lowest at 3.2%.</li>
+        <li><strong>Factual error:</strong> Model reaches incorrect final answer due to a factual mistake, despite correct reasoning structure. Correlates with model size and training data coverage.</li>
+      </ul>
+
+      <h2>5. Why Agentic Reasoning Resists Naive Scaling</h2>
+      <p>A notable observation from our benchmarks is that performance on agentic tasks does not correlate as strongly with model parameter count as performance on static language benchmarks. Qwen-2.5-72B, despite being 5.6× smaller than Titan-405B, achieves 83% of Titan's AgentBench-Hard score. By contrast, the same size ratio on MMLU would typically predict a much larger gap.</p>
+      <p>We attribute this to three properties of agentic tasks that differ from static benchmarks:</p>
+      <ol>
+        <li><strong>Tool use shifts the bottleneck from parametric knowledge to reasoning:</strong> When models have access to tools (search, calculator, code execution), factual recall ability matters less. The limiting factor becomes the model's ability to decompose the task into correct tool calls, interpret tool outputs, and update its reasoning — capabilities that are less parameter-count-dependent than factual memorization.</li>
+        <li><strong>Context length creates an infrastructure bottleneck:</strong> The 1,024K context window is Titan's single largest advantage on NLHS. Infrastructure constraints (available context length) are as important as model quality for long-horizon tasks.</li>
+        <li><strong>Self-correction requires calibration, not just capability:</strong> Models that can self-correct require calibrated uncertainty — the ability to recognize when a prior step was wrong and revise without being prompted. This is a training-time property that does not scale simply with parameter count.</li>
+      </ol>
+
+      <h2>6. Conclusion</h2>
+      <p>Titan-405B achieves the highest overall performance on all three agentic reasoning benchmarks, with a 10.4% mean improvement over the second-best model. The advantage is largest on long-horizon tasks requiring extended context and sustained coherence, where Titan's hardware-software co-design properties are most fully exploited. We release the Nucore Long-Horizon Suite benchmark publicly to enable the research community to evaluate future models on comparable long-horizon tasks.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Document type</h4>
+        <div class="cite-label" style="margin-top:8px;font-size:15px;">Technical report — 42 pages<br>3 benchmark suites</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related reading</h4>
+        <div class="sidebar-related">
+          <a href="kv-cache.html">Memory-Persistent Agent Loops</a>
+          <a href="ttft-production.html">Production Latency Study</a>
+          <a href="orion.html">Orion: LLM Fine-Tuning Agent</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Access Titan</h4>
+        <div class="sidebar-links">
+          <a href="../products.html#titan">→ Titan product page</a>
+          <a href="../contact.html">→ Request demo</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Run your agentic workloads on Titan.</h2>
+      <p>405B parameters, 1,024K context, on infrastructure you own.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Talk to us</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

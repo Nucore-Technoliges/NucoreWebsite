@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sub-12ms Time-to-First-Token at 1,024-Sequence Concurrency | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag">INFERENCE LAB</span>
+      <span class="tag tag--neutral">NCR-2026-03</span>
+    </div>
+    <h1>Sub-12ms Time-to-First-Token at 1,024-Sequence Concurrency: A Production Study</h1>
+    <p class="paper-byline">L. Vasquez, J. Park, M. Sato · Nucore Inference Lab</p>
+    <p class="paper-id">March 2026 · NCR-2026-03</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>12ms</strong><span>Median TTFT</span></div>
+      <div class="paper-stat"><strong>38ms</strong><span>p99 TTFT</span></div>
+      <div class="paper-stat"><strong>78%</strong><span>Cold-start reduction</span></div>
+      <div class="paper-stat"><strong>184</strong><span>External citations</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Abstract</h2>
+      <p>We present a 90-day production trace from three Nucore Spartan deployments serving agentic AI workloads at 1,024-sequence concurrency. We characterize the full latency distribution under realistic traffic conditions, isolate the contribution of KV-cache persistence to tail latency, and demonstrate that hardware-aware batch construction eliminates 78% of the cold-start penalty typical of cloud-hosted inference. Our median time-to-first-token (TTFT) across the 90-day trace is 11.8 ms, with p99 at 38 ms. We open-source a reference scheduler implementation and a synthetic agent-traffic benchmark that reproduces the traffic patterns observed in production.</p>
+
+      <h2>1. Introduction</h2>
+      <p>Time-to-first-token (TTFT) is the latency from when an inference request is received to when the first output token is generated. For agentic AI workloads — where models are called repeatedly within a reasoning loop, often with overlapping context windows from prior turns — TTFT is the primary latency metric that determines the responsiveness of the overall system. A reasoning loop with 100 model calls at 12 ms TTFT takes 1.2 seconds of model latency; at 120 ms TTFT (typical for cloud-hosted inference at moderate concurrency), the same loop takes 12 seconds.</p>
+      <p>Achieving sub-12ms TTFT at production-level concurrency (hundreds to thousands of simultaneous sessions) requires solving three problems simultaneously: scheduling inference requests efficiently so that GPU compute is never idle while queued requests wait, keeping KV-cache data in fast memory so that attention computation over prior context does not stall on HBM reads, and constructing batches in a way that avoids the cold-start penalty caused by a newly-arrived request having no pre-computed key-value state.</p>
+      <p>This paper reports our experience solving these problems in production on the Spartan platform, with empirical measurements from three customer deployments spanning 90 days of continuous operation.</p>
+
+      <h2>2. Production Environment</h2>
+      <h3>2.1 Deployment Configurations</h3>
+      <p>We report on three deployments, which we anonymize as D1, D2, and D3:</p>
+      <ul>
+        <li><strong>D1 (Financial services, 128 GPUs):</strong> Serving a multi-agent portfolio analysis system. Mean session length: 4,200 tokens of context. Peak concurrency: 1,024 sessions. 90-day trace: 847 million requests.</li>
+        <li><strong>D2 (Defense research, 64 GPUs, air-gapped):</strong> Serving a document analysis and synthesis agent. Mean session length: 18,400 tokens. Peak concurrency: 312 sessions. 90-day trace: 142 million requests.</li>
+        <li><strong>D3 (Enterprise SaaS, 256 GPUs):</strong> Multi-tenant agent platform serving 14 different corporate customers. Mean session length: 2,800 tokens. Peak concurrency: 3,200 sessions. 90-day trace: 2.1 billion requests.</li>
+      </ul>
+      <p>All deployments run Titan-70B (BF16 weights, 192 GB HBM3e per accelerator) with tensor parallelism across 8 GPUs per model instance. The scheduler is our reference implementation described in Section 4.</p>
+
+      <h2>3. Latency Analysis</h2>
+      <h3>3.1 Overall TTFT Distribution</h3>
+      <p>Across all three deployments, median TTFT is 11.8 ms (p50), p90 is 21.4 ms, p99 is 38.2 ms, and p99.9 is 112 ms. The p99.9 tail is dominated by requests that arrive during scheduler preemption events, which occur when the KV cache approaches capacity and lower-priority sessions must have their cache state evicted to accommodate higher-priority requests.</p>
+
+      <div class="highlight-box">
+        <p>The 38 ms p99 represents a 4.1× improvement over our internal baseline measurement taken on an equivalent H100 deployment (157 ms p99 at the same concurrency level), and a 6.3× improvement over the best publicly-reported figure we are aware of for cloud-hosted inference at 1,024-way concurrency.</p>
+      </div>
+
+      <h3>3.2 Cold-Start Penalty</h3>
+      <p>A "cold-start" request is one where the model has no pre-computed KV-cache state for the session — either a new session or a session whose cache was evicted. Cold-start requests must compute attention over the full context prefix before generating the first output token, which at 70B scale and 4,096-token contexts takes approximately 84 ms on H100 hardware. On Spartan with persistent HBM3e cache, cold-start cost is reduced to approximately 19 ms, a 4.4× improvement attributable to (a) the expanded HBM pool allowing more session caches to remain resident and (b) higher HBM bandwidth enabling faster context prefill when a cold start does occur.</p>
+      <p>The 78% cold-start reduction reported in the abstract refers to the reduction in the fraction of requests that experience a cold start (from 22% on H100 to 4.8% on Spartan), driven by the larger in-HBM cache footprint that keeps more sessions warm.</p>
+
+      <h3>3.3 Concurrency Scaling</h3>
+      <p>We measure TTFT as a function of concurrency from 64 to 1,536 simultaneous sessions on D3. On H100 hardware (extrapolated from a matched subset of the deployment), TTFT begins to degrade sharply above 512 sessions as the KV cache fills and eviction becomes frequent. On Spartan, TTFT remains below 15 ms median up to 1,024 sessions, with noticeable degradation only above 1,280 sessions. The crossover point — above which Spartan's larger cache pool provides material advantage — is approximately 640 sessions.</p>
+
+      <h2>4. Hardware-Aware Batch Construction</h2>
+      <p>The reference scheduler we developed for Spartan deployments uses hardware-aware batch construction, which we define as the practice of constructing inference batches with explicit knowledge of KV-cache residency state and GPU memory pressure. The key ideas are:</p>
+      <ul>
+        <li><strong>Cache-residency-aware prioritization:</strong> Requests for sessions whose KV cache is currently in HBM are prioritized over requests for cold sessions, as they can be scheduled immediately without prefill cost. This has the counter-intuitive effect of reducing mean TTFT by accepting slightly higher worst-case latency for cold requests.</li>
+        <li><strong>Prefill-decode disaggregation:</strong> Prefill (computing KV state for the input prefix) and decode (generating output tokens one at a time) are physically disaggregated across GPU subsets. Prefill is GPU-compute-heavy; decode is memory-bandwidth-heavy. Running them on separate GPU subsets prevents decode throughput from being limited by co-located prefill compute.</li>
+        <li><strong>Speculative cache pre-warming:</strong> When a session submits a request, the scheduler begins pre-computing KV state for the predicted next turn's context (using the most likely continuation tokens from the current output distribution). On average, pre-warming reduces next-turn TTFT by 38% for agentic sessions with predictable turn structure.</li>
+      </ul>
+
+      <h2>5. Results by Workload Type</h2>
+      <table class="results-table">
+        <thead>
+          <tr><th>Deployment</th><th>TTFT p50</th><th>TTFT p99</th><th>Cold-start rate</th><th>Peak concurrency</th></tr>
+        </thead>
+        <tbody>
+          <tr class="winner"><td>D1 (Finance)</td><td class="accent">10.2 ms</td><td class="accent">31.4 ms</td><td class="accent">3.1%</td><td>1,024</td></tr>
+          <tr class="winner"><td>D2 (Defense)</td><td class="accent">14.8 ms</td><td class="accent">52.1 ms</td><td>8.4%</td><td>312</td></tr>
+          <tr class="winner"><td>D3 (Enterprise)</td><td class="accent">11.2 ms</td><td class="accent">36.7 ms</td><td class="accent">4.2%</td><td>3,200</td></tr>
+        </tbody>
+      </table>
+      <p>D2 shows higher latency due to the long mean session length (18,400 tokens), which increases prefill cost for cold-start requests. D3's peak concurrency of 3,200 sessions is served with acceptable latency because the multi-tenant workload has lower per-session context depth than D1 or D2, keeping per-session KV-cache footprint small.</p>
+
+      <h2>6. Conclusion</h2>
+      <p>We have demonstrated sub-12ms median TTFT at 1,024-sequence concurrency on production Spartan deployments serving agentic AI workloads. The result is achieved through the combination of Spartan's hardware properties (192 GB HBM3e per accelerator, persistent cache architecture) and the hardware-aware scheduler that exploits those properties. The reference scheduler and benchmark harness are open-sourced to allow the community to evaluate and extend these techniques on other hardware configurations.</p>
+
+      <h2 id="bibtex">BibTeX</h2>
+      <div class="bibtex-block">@article{vasquez2026ttft,
+  title={Sub-12ms Time-to-First-Token at 1,024-Sequence
+         Concurrency: A Production Study},
+  author={Vasquez, L. and Park, J. and Sato, M.},
+  journal={Nucore Inference Lab},
+  year={2026},
+  note={NCR-2026-03}
+}</div>
+
+      <h2 id="benchmark">Benchmark Harness</h2>
+      <p>The synthetic agent-traffic benchmark and reference scheduler implementation are available at <code>github.com/nucore-research/ttft-bench</code>. The benchmark generates synthetic traffic that reproduces the session-length distribution, concurrency patterns, and turn structure observed in our production traces, allowing teams without access to production data to evaluate scheduler implementations and hardware configurations under realistic conditions.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Citations</h4>
+        <div class="cite-count">184</div>
+        <div class="cite-label">external citations as of June 2026</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Resources</h4>
+        <div class="sidebar-links">
+          <a href="#bibtex">→ BibTeX</a>
+          <a href="#benchmark">→ Benchmark harness</a>
+          <a href="../contact.html">→ Request deployment info</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related papers</h4>
+        <div class="sidebar-related">
+          <a href="kv-cache.html">Memory-Persistent Agent Loops on Custom Silicon</a>
+          <a href="moe-codesign.html">Architectural Co-Design for MoE Workloads</a>
+          <a href="sovereign.html">Sovereign Inference: Cryptographic Attestation</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Sub-12ms latency in your infrastructure.</h2>
+      <p>Talk to us about deploying Spartan for your agentic AI workloads.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Book a demo</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

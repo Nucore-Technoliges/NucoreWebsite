@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Helios: A Scalable Data Annotation Engine for LLM Pretraining and RLHF Pipelines | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag tag--accent">NEW · 2026</span>
+      <span class="tag">DATA RESEARCH</span>
+      <span class="tag tag--neutral">NCR-2026-06</span>
+    </div>
+    <h1>Helios: A Scalable Data Annotation Engine for LLM Pretraining and RLHF Pipelines</h1>
+    <p class="paper-byline">S. Iyer, N. Zhou, K. Olsen · Nucore Data Research</p>
+    <p class="paper-id">May 2026 · NCR-2026-06</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>3.1×</strong><span>Faster pipeline</span></div>
+      <div class="paper-stat"><strong>2.4T</strong><span>Token training run</span></div>
+      <div class="paper-stat"><strong>18%</strong><span>Benchmark uplift</span></div>
+      <div class="paper-stat"><strong>47</strong><span>External citations</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Abstract</h2>
+      <p>We introduce Helios, a data engine purpose-built to transform raw organizational data into high-quality labeled corpora for large language model training. Helios combines deduplication at billion-token scale, classifier-guided quality filtering, active learning for preference dataset construction, and human review queuing into a single orchestrated pipeline running natively on Nucore infrastructure. On a 2.4-trillion-token pretraining run for a Titan-70B checkpoint, Helios reduces pipeline wall-clock time by 3.1× over comparable open-source tooling (CCNet + custom dedup) and produces training datasets with 18% higher downstream benchmark scores than the same raw data processed through standard deduplication-only pipelines. We describe the architecture, the quality signal taxonomy Helios uses to filter and prioritize data, and the active learning loop that constructs preference datasets for RLHF without requiring human annotators to label every example.</p>
+
+      <h2>1. Introduction</h2>
+      <p>The dominant constraint on large language model quality is no longer compute — it is data quality. This has been understood in the research community since at least the Chinchilla scaling laws (Hoffmann et al., 2022), which established that model size and training token count should scale together. The practical implication is that reaching frontier-quality models requires not just large raw corpora, but carefully curated, filtered, and annotated training data that is worth training on at scale.</p>
+      <p>Despite this, data infrastructure for LLM training has received far less attention than model architecture and training algorithms. The de facto standard approach — crawl the web, deduplicate with MinHash or SimHash, apply a simple quality classifier, tokenize, and shuffle — has known weaknesses: it removes near-duplicates but not semantic duplicates, its quality classifiers are domain-general and underperform on technical and specialized content, and it produces no signal about preference or instruction-following quality needed for RLHF fine-tuning.</p>
+      <p>Helios is our answer to this gap. It is not a collection of scripts but an orchestrated data engine with four tightly integrated components: a multi-level deduplication system, a learned quality cascade, an active learning loop for preference data construction, and a human review interface that routes uncertain examples to annotators without requiring every example to be manually reviewed.</p>
+      <p>In this paper we describe the Helios architecture, give implementation details for each component, and report results from three deployments: a 2.4-trillion-token Titan-70B pretraining run, a domain fine-tuning corpus for clinical notes, and a preference dataset construction run for RLHF alignment of a Titan-7B instruction model.</p>
+
+      <h2>2. Data Pipeline Challenges at LLM Scale</h2>
+      <h3>2.1 Deduplication at Trillion-Token Scale</h3>
+      <p>Standard MinHash-based near-deduplication (Lee et al., 2022) operates at the document level and targets lexically near-identical documents. It misses semantic duplicates — documents that cover the same content with different wording — and struggles with partially-duplicated documents (e.g., web articles that quote extensively from a primary source). At trillion-token scales, the compute cost of all-pairs comparison makes exact deduplication infeasible, requiring locality-sensitive approximations that introduce false negative rates.</p>
+      <p>Helios addresses this with a three-level deduplication hierarchy: exact hash deduplication at the paragraph level (fast, catches direct copies and scraped mirrors), MinHash-LSH near-deduplication at the document level (catches lightly-paraphrased duplicates), and a learned semantic deduplication model that embeds documents into a shared vector space and removes clusters with cosine similarity above 0.92. The three levels operate in sequence on the same data pass, so the marginal cost of each level applies only to documents that survived earlier levels.</p>
+      <h3>2.2 Quality Filtering</h3>
+      <p>Quality filtering for web-crawled text is typically done with a single classifier trained to predict whether a document resembles "high-quality" reference text (Wikipedia, books, academic papers). These classifiers work well on in-distribution text but produce high false-negative rates on technical domains (code, clinical notes, legal filings, financial reports) that don't resemble encyclopedia prose but are high-value training signal for domain-adapted LLMs.</p>
+      <h3>2.3 Preference Data for RLHF</h3>
+      <p>Collecting human preference data for RLHF at scale requires showing annotators pairs of model completions and asking which is better. The cost per preference label is high (typically $0.50–$2.00 USD per comparison when using skilled annotators), and the volume of labels needed for a frontier RLHF run is large (hundreds of thousands of comparisons). Active learning — selecting the most informative examples for human annotation — reduces the required label count, but standard active learning assumes a fixed pool of examples, whereas LLM preference data must be constructed on-the-fly from model completions.</p>
+
+      <h2>3. Helios Architecture</h2>
+      <h3>3.1 Ingestion and Storage</h3>
+      <p>Helios ingests raw data from six source types: web crawl dumps (in Common Crawl WARC format), document collections (PDF, DOCX, HTML), database exports, API feeds, code repositories, and media transcripts. Each source type has a dedicated parser that extracts clean text, preserves structural metadata (document type, domain, date, provenance), and writes to a unified internal format backed by an append-only columnar store sharded across Nucore storage nodes.</p>
+      <p>The storage layer is designed for streaming reads at the scale needed to feed training: Spartan GPU clusters consuming 2.4 trillion tokens require ingestion rates of approximately 800 GB/hour of tokenized data during peak training. Helios maintains a read cache of the most recently processed data shards to sustain these rates without storage I/O becoming a bottleneck.</p>
+      <h3>3.2 Multi-Level Deduplication</h3>
+      <p>The three-level deduplication system processes each document as follows:</p>
+      <ul>
+        <li><strong>Level 1 (Exact paragraph hash):</strong> A SHA-256 hash is computed for each paragraph after whitespace normalization. Paragraphs whose hashes have been seen in the current or any previous processing run are removed. This level runs at approximately 2 billion paragraphs per hour on a 32-CPU preprocessing node and catches approximately 31% of all duplicate content in typical web crawl data.</li>
+        <li><strong>Level 2 (MinHash-LSH near-dedup):</strong> Documents surviving Level 1 are MinHash-fingerprinted with 128 hash functions and 8 bands of 16 rows each, giving a threshold of approximately 0.80 Jaccard similarity. Documents in the same LSH bucket are compared pairwise; the higher-scored document (by quality classifier) is retained, the lower is removed. This level catches approximately 22% of the remaining documents.</li>
+        <li><strong>Level 3 (Semantic near-dedup):</strong> A lightweight 110M-parameter sentence encoder (trained on Titan-generated paraphrases of the Pile) embeds each surviving document into 384 dimensions. Documents within cosine distance 0.08 of a previously-seen document are flagged as semantic duplicates. The shortest document in each semantic cluster is removed; ties are broken by quality score. This level catches approximately 8% of remaining documents and is particularly effective at removing scraped rephrasing farms.</li>
+      </ul>
+      <h3>3.3 Quality Cascade</h3>
+      <p>Helios uses a four-stage quality cascade rather than a single quality classifier:</p>
+      <ul>
+        <li><strong>Stage 1 (Heuristic filters):</strong> Rule-based filters remove documents below a length threshold (150 tokens), above a symbol-to-word ratio of 0.15, with excessive repetition (any 20-token span repeated more than 3 times), or with line-ending patterns indicative of navigation menus or boilerplate HTML.</li>
+        <li><strong>Stage 2 (Domain classifier):</strong> A 32M-parameter classifier assigns each document to one of 24 domain categories (news, academic, code, legal, medical, financial, social, etc.). Domain assignment determines which Stage 3 and Stage 4 classifiers apply.</li>
+        <li><strong>Stage 3 (Domain quality classifiers):</strong> A bank of 24 domain-specific quality classifiers, each trained on curated positive examples from that domain. Domain-specific classifiers avoid the false-negative problem of general-purpose classifiers on technical text.</li>
+        <li><strong>Stage 4 (Diversity-aware scoring):</strong> Documents are scored for their marginal contribution to the diversity of the retained corpus, using a greedy maximum-marginal-relevance criterion over domain × style × topic embeddings. Documents that are high-quality but redundant with already-retained content are downweighted to promote diversity.</li>
+      </ul>
+      <h3>3.4 Active Learning for RLHF Preference Data</h3>
+      <p>Helios constructs preference datasets using an online active learning loop that operates as follows: (1) A pool of prompts is sampled from the filtered pretraining corpus. (2) The current model checkpoint generates two completions per prompt (temperature 0.7 and 1.0). (3) A reward model trained on existing labeled preferences scores each completion pair, producing a confidence estimate. (4) Pairs where the reward model is uncertain (confidence below a threshold) are routed to the human review queue; pairs where the reward model is confident are labeled automatically. (5) Human-labeled examples are added to the training set for the reward model, and the reward model is fine-tuned incrementally.</p>
+      <p>This loop reduces the human annotation rate by 73% compared to labeling all pairs, while maintaining preference label accuracy within 2 percentage points of full-human annotation (as measured by agreement with a held-out full-human-labeled test set).</p>
+
+      <h2>4. Evaluation</h2>
+      <h3>4.1 Pretraining Data Quality: Titan-70B</h3>
+      <p>We compare three data pipelines on the 2.4-trillion-token pretraining run for Titan-70B:</p>
+      <ul>
+        <li><strong>Baseline (CCNet + custom dedup):</strong> The open-source CCNet pipeline with our custom MinHash deduplication layer. This represents a competitive open-source baseline.</li>
+        <li><strong>Helios Level 1–2 only:</strong> Helios deduplication (Levels 1 and 2) plus Stages 1–2 quality filtering. Ablation to isolate the contribution of semantic dedup and domain-specific quality classifiers.</li>
+        <li><strong>Full Helios:</strong> Complete three-level deduplication and four-stage quality cascade.</li>
+      </ul>
+      <table class="results-table">
+        <thead>
+          <tr><th>Pipeline</th><th>Wall-clock time</th><th>MMLU</th><th>HumanEval</th><th>MedQA</th><th>AgentBench</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>CCNet + dedup</td><td>41.2 hrs</td><td>71.4</td><td>48.2</td><td>52.1</td><td>41.8</td></tr>
+          <tr><td>Helios L1–L2</td><td>18.3 hrs</td><td>73.1</td><td>51.4</td><td>55.9</td><td>44.3</td></tr>
+          <tr class="winner"><td class="accent">Full Helios</td><td class="accent">13.3 hrs</td><td class="accent">76.8</td><td class="accent">56.3</td><td class="accent">64.7</td><td class="accent">49.2</td></tr>
+        </tbody>
+      </table>
+      <p>Full Helios reduces pipeline wall-clock time by 3.1× versus the CCNet baseline (41.2 hrs → 13.3 hrs) and improves downstream benchmark performance by an average of 18% across the four evaluation suites. The largest gains are on MedQA (+12.6 points absolute), where domain-specific quality classifiers exclude large volumes of low-quality clinical forum posts that the general-purpose CCNet classifier retains.</p>
+
+      <h3>4.2 RLHF Preference Data Efficiency</h3>
+      <p>On the Titan-7B RLHF alignment run, the active learning loop reduces human annotation cost by 73% (from 142,000 human-labeled pairs to 38,400) while achieving preference label accuracy of 91.3% on the held-out test set, compared to 93.1% for full human labeling. The reward model trained on active-learning-selected labels achieves a win rate of 67.4% against the SFT baseline in a blinded human preference evaluation, versus 69.1% for the reward model trained on full human labels — a gap of 1.7 percentage points at 73% lower annotation cost.</p>
+
+      <h2>5. Discussion</h2>
+      <p>The 3.1× wall-clock reduction in pipeline time is a significant practical advantage, especially for teams that iterate rapidly on data composition — changing domain mix, adding new data sources, or reprocessing after quality classifier updates. At our scale, a 3× faster pipeline means data experimentation that took weeks can be done in days.</p>
+      <p>The 18% benchmark improvement from Helios data versus CCNet data is surprising in magnitude. We attribute it primarily to two factors: the domain-specific quality cascade removing more low-quality-but-not-obviously-bad content than the general-purpose classifier, and the semantic deduplication removing training examples that were semantically redundant but lexically distinct — which would otherwise inflate the apparent diversity of the training set while contributing little new signal.</p>
+      <p>A limitation of our evaluation is that we compare against a fixed-token training budget (2.4T tokens for both pipelines). Because Helios filtering is more aggressive, the filtered corpus contains fewer tokens than the CCNet corpus at the same raw input volume. We control for this by training on 2.4T tokens from each filtered corpus (sampling with replacement if necessary), but acknowledge that the comparison is not perfectly apple-to-apple if token budget is treated as a free variable.</p>
+
+      <h2>6. Conclusion</h2>
+      <p>Helios demonstrates that data infrastructure is a first-class engineering problem for LLM development, not a preprocessing afterthought. A purpose-built data engine with multi-level deduplication, domain-aware quality filtering, and active learning for preference data produces meaningfully better models at lower pipeline cost than the current open-source standard practice.</p>
+      <p>We are integrating Helios as a first-class component of the Nucore product stack, accessible as a managed service on Nucore infrastructure and as a pipeline that runs end-to-end into Orion's fine-tuning and Titan's pretraining workflows. The code for the deduplication system and quality classifiers is open-sourced at <code>github.com/nucore-research/helios</code>.</p>
+
+      <h2 id="bibtex">BibTeX</h2>
+      <div class="bibtex-block">@article{iyer2026helios,
+  title={Helios: A Scalable Data Annotation Engine for
+         LLM Pretraining and RLHF Pipelines},
+  author={Iyer, S. and Zhou, N. and Olsen, K.},
+  journal={Nucore Data Research},
+  year={2026},
+  note={NCR-2026-06}
+}</div>
+
+      <h2 id="code">Code &amp; Data</h2>
+      <p>The Helios deduplication system, quality classifier training code, and active learning loop implementation are available at <code>github.com/nucore-research/helios</code>. The repository includes pre-trained domain classifiers for 24 domain categories, the semantic deduplication encoder, and scripts for reproducing the benchmark comparisons reported in this paper.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Citations</h4>
+        <div class="cite-count">47</div>
+        <div class="cite-label">external citations as of June 2026</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Resources</h4>
+        <div class="sidebar-links">
+          <a href="#bibtex">→ BibTeX</a>
+          <a href="#code">→ Code on GitHub</a>
+          <a href="../products.html#helios">→ Helios product page</a>
+          <a href="../contact.html">→ Request access</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related papers</h4>
+        <div class="sidebar-related">
+          <a href="orion.html">Orion: Autonomous Agent for End-to-End LLM Fine-Tuning</a>
+          <a href="rlhf.html">Hardware-Aware RLHF</a>
+          <a href="moe-codesign.html">Architectural Co-Design for MoE Workloads</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Build better training data with Helios.</h2>
+      <p>Talk to us about integrating Helios into your LLM data pipeline.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Get in touch</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

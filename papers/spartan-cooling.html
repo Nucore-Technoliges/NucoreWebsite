@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cooling and Power Design for High-Density Spartan Racks | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag tag--accent">TECHNICAL REPORT</span>
+      <span class="tag tag--neutral">TR-2025-18</span>
+    </div>
+    <h1>Cooling and Power Design for High-Density Spartan Racks</h1>
+    <p class="paper-byline">Nucore Hardware Research</p>
+    <p class="paper-id">October 2025 · TR-2025-18 · 24 pp. · For facilities engineers</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>24</strong><span>Pages</span></div>
+      <div class="paper-stat"><strong>1.22</strong><span>Achieved PUE</span></div>
+      <div class="paper-stat"><strong>40kW</strong><span>Per-rack power</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Purpose of This Document</h2>
+      <p>This report is a practitioner's guide to deploying Nucore Spartan at high density. It covers liquid-cooling loop design, power-delivery topology, rack-level airflow, and the failure modes we have encountered and resolved in production deployments. It is written for facilities engineers, data center operations teams, and infrastructure architects who will be responsible for Spartan deployment environments.</p>
+      <p>This is not a marketing document. We report actual failure rates, actual cooling requirements, and the constraints we discovered through production deployment, including some that were not anticipated in our initial design specifications. The goal is to help deployment teams plan correctly, not to describe an idealized scenario.</p>
+
+      <h2>1. Spartan Power Profile</h2>
+      <h3>1.1 Per-Accelerator Power Draw</h3>
+      <p>Each Spartan accelerator draws between 280W and 420W depending on workload intensity. Typical production inference workloads run at 320–360W. Training workloads consistently run at 400–420W. Idle power (accelerator active but no work queued) is approximately 85W.</p>
+      <p>A standard 8-GPU Spartan server draws between 2.4 kW (inference) and 3.6 kW (full training) from the compute subsystem alone. With server platform (CPU, DRAM, NICs, storage): 3.2–4.8 kW per server. At 8 servers per rack, rack power draw is 25.6–38.4 kW under sustained workloads.</p>
+      <p>We specify and test deployments for 40 kW per rack to provide headroom above the sustained maximum. Facilities engineers should plan power distribution for 40 kW per rack with 20% headroom on the branch circuit (48 kW available per rack position).</p>
+
+      <h3>1.2 Power Factor and Inrush</h3>
+      <p>Spartan servers have a power factor of 0.97 at full load (measured). Inrush current on power-on is approximately 2.4× steady-state for the first 400 ms, which is relevant for UPS and PDU sizing. Sequential power-on of servers in a rack (2-second stagger between servers) eliminates inrush as a sizing concern for PDU design.</p>
+
+      <h2>2. Cooling Requirements</h2>
+      <h3>2.1 Thermal Design Power and Cooling Mode</h3>
+      <p>At 40 kW per rack, standard air-cooling (CRAC-based cold-aisle containment) is marginal. ASHRAE A2 thermal envelope (inlet air up to 35°C) is maintained at 40 kW density in cold-aisle-contained rows if the CRAC system delivers 250 CFM per kW. In practice, most data centers with CRAC systems can sustain this for isolated high-density racks; when entire rows are at 40 kW density, air cooling becomes unreliable.</p>
+      <p>Our recommended deployment configuration for density above 32 kW per rack is direct liquid cooling (DLC) to each server chassis, with rear-door heat exchangers as a fallback. All Spartan servers ship with DLC manifolds; the liquid-cooling loop is not optional at 40 kW sustained density.</p>
+
+      <h3>2.2 Liquid Cooling Loop Specifications</h3>
+      <ul>
+        <li><strong>Coolant:</strong> Standard facility chilled water (6°C supply, 12°C return target) or 25°C warm water (supply, 40°C return) for facilities with warm-water-capable chillers.</li>
+        <li><strong>Flow rate:</strong> 8 liters per minute per server at full training load. 12 LPM per server with 20% headroom for peak spikes.</li>
+        <li><strong>Pressure:</strong> Maximum inlet pressure 5 bar. Recommended 2.5–3.5 bar at manifold inlet.</li>
+        <li><strong>Leak detection:</strong> Each server chassis includes a moisture sensor on the DLC loop. A leak alarm should be connected to the facility BMS and configured to shut off liquid supply to the affected rack within 30 seconds of detection.</li>
+      </ul>
+
+      <h3>2.3 Air Cooling as Fallback</h3>
+      <p>If DLC is unavailable or during a DLC system maintenance window, Spartan servers can operate on air cooling with reduced maximum workload intensity. Maximum air-cooled power draw is 280W per accelerator (versus 420W with DLC), which limits training throughput to approximately 65% of DLC-cooled performance. Inference workloads are less affected (inference runs at 320–360W typically, which is within the air-cooled limit if ambient is below 28°C).</p>
+
+      <h2>3. Power Delivery Topology</h2>
+      <h3>3.1 Per-Rack PDU Configuration</h3>
+      <p>We recommend dual-feed per-rack PDUs (Rack A + Rack B power feeds from separate UPS paths) with 48 kW per feed. Each server connects to both PDU branches; Spartan servers support dual power supply units (PSUs) with automatic load balancing and failover.</p>
+      <p>In deployments where dual-feed PDUs are not available, single-feed PDUs with UPS-backed circuits are acceptable. The risk is that a single PDU failure takes the entire rack offline; in high-availability deployments, distribute servers across multiple racks to maintain partial capacity during single-rack failures.</p>
+
+      <h3>3.2 Generator Backup</h3>
+      <p>For deployments that require continuous operation through utility power outages (defense and finance deployments typically require this), generator backup should be sized for 100% of peak rack power draw plus the DLC chiller and CRAC loads. We have observed that DLC chiller power (typically 30–40% of compute power at design efficiency) is the most commonly under-counted component in generator sizing.</p>
+
+      <h2>4. Failure Modes in Production</h2>
+      <p>We document the failure modes we have observed across 14 production Spartan deployments, in order of observed frequency:</p>
+      <ol>
+        <li><strong>DLC flow restriction (most common):</strong> Reduced flow rate due to partial blockage in facility coolant supply. Symptom: accelerator thermal throttling despite apparent system health. Detected by comparing measured DLC return temperature against expected value at measured flow rate. Resolved by flushing facility coolant supply lines.</li>
+        <li><strong>PDU phase imbalance:</strong> At 40 kW per rack on three-phase PDUs, uneven server power draw can create significant phase imbalance. Observed in two deployments; resolved by alternating server power supply connections across phases rather than all servers sharing the same phase.</li>
+        <li><strong>Cold-aisle air stratification:</strong> In tall (48U) racks with cold-aisle containment, warm exhaust from lower-position servers recirculates into the cold aisle through gaps in blanking panels. Symptom: top-of-rack servers run 4–8°C warmer than bottom-of-rack. Resolved by ensuring complete blanking panel coverage and confirming cold-aisle containment integrity.</li>
+        <li><strong>Network cable heat soak:</strong> In high-density racks with 400G InfiniBand cables, cable bundle routing in the hot aisle creates a concentrated heat source that can affect adjacent equipment. Routed cable bundles vertically (not horizontally in hot aisle) in all deployments after observing this in the first two facilities.</li>
+        <li><strong>UPS transfer time transients:</strong> During utility power failures and UPS transfer, some Spartan servers experience a brief (80–120 ms) power drop that causes GPU state loss. Resolved by adjusting UPS transfer time to below 12 ms (the holding time of Spartan servers' bulk capacitors) or by configuring servers to use the UPS-backed circuit as primary rather than transfer target.</li>
+      </ol>
+
+      <h2>5. Deployment Checklist</h2>
+      <p>Before first production traffic, confirm:</p>
+      <ul>
+        <li>DLC flow rate measured and confirmed at ≥ 8 LPM per server at target workload</li>
+        <li>DLC leak detection wired to BMS with auto-shutoff configured</li>
+        <li>PDU phase balance measured under load (maximum phase imbalance: 10%)</li>
+        <li>Cold-aisle containment integrity confirmed (no gaps larger than 1U)</li>
+        <li>UPS transfer time tested and confirmed below 12 ms</li>
+        <li>Generator load test conducted at 100% design load for minimum 4 hours</li>
+        <li>Thermal infrared scan of rack under full training load to identify hot spots</li>
+        <li>Network cable routing confirmed in hot aisle (vertical, bundled at rear)</li>
+      </ul>
+
+      <h2>6. Achieved PUE in Production</h2>
+      <p>Across 14 production deployments, achieved PUE ranges from 1.14 (dedicated data center with purpose-built DLC and economizer cooling in a cold climate) to 1.38 (retrofitted existing facility with air-cooled fallback). The mean achieved PUE across all deployments is 1.22, used in our TCO analysis (TR-2026-07). PUE below 1.15 is achievable in purpose-designed facilities with warm-water DLC and outdoor economizer cooling in climates with more than 6 months of annual economization hours.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Audience</h4>
+        <div class="cite-label" style="margin-top:8px;font-size:15px;">Facilities engineers<br>Data center ops teams<br>Infrastructure architects</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Quick specs</h4>
+        <div class="sidebar-links" style="flex-direction:column;gap:10px;font-size:14px;color:var(--text-secondary);">
+          <span>40 kW per rack design</span>
+          <span>8 LPM DLC flow per server</span>
+          <span>Mean achieved PUE: 1.22</span>
+          <span>Dual-feed PDU recommended</span>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related reading</h4>
+        <div class="sidebar-related">
+          <a href="tco-study.html">TCO Field Study (TR-2026-07)</a>
+          <a href="moe-codesign.html">Architectural Co-Design</a>
+          <a href="fp8-energy.html">FP8 Energy Pathways</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Pre-deployment support</h4>
+        <div class="sidebar-links">
+          <a href="../contact.html">→ Talk to our team</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Plan your Spartan deployment.</h2>
+      <p>Our team can review your facility specs and identify any deployment risks before hardware arrives.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Talk to facilities team</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

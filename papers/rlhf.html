@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hardware-Aware RLHF: Closing the Train–Inference Gap on Co-Designed GPUs | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag">TITAN RESEARCH</span>
+      <span class="tag tag--neutral">NCR-2025-12</span>
+    </div>
+    <h1>Hardware-Aware RLHF: Closing the Train–Inference Gap on Co-Designed GPUs</h1>
+    <p class="paper-byline">P. Ramaswamy, M. Sato, R. Kowalski · Nucore Titan Research</p>
+    <p class="paper-id">December 2025 · NCR-2025-12</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>31%</strong><span>Lower KL drift</span></div>
+      <div class="paper-stat"><strong>2.1×</strong><span>Faster convergence</span></div>
+      <div class="paper-stat"><strong>70B</strong><span>Titan checkpoints</span></div>
+      <div class="paper-stat"><strong>145</strong><span>External citations</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Abstract</h2>
+      <p>Reinforcement learning from human feedback (RLHF) commonly assumes a clean separation between the training stack and the deployed inference stack: models are trained with one set of numerical precision paths and serving configurations, then deployed with different quantization settings, attention implementations, and batch construction strategies. We argue this train–inference gap is the source of most RLHF training instabilities at frontier model scales, manifesting as excessive KL-divergence drift, reward hacking, and mode collapse. We present hardware-aware RLHF, a training protocol in which the reward model, policy model, and reference model all execute on the same silicon paths — including identical quantization schedules, attention implementations, and tensor-core dispatch configurations — as the model uses at serving time. Applied to 70B Titan checkpoints on Spartan hardware, hardware-aware RLHF reduces KL-divergence drift by 31% and achieves 2.1× faster convergence to comparable preference accuracy relative to standard RLHF on the same hardware.</p>
+
+      <h2>1. Introduction</h2>
+      <p>RLHF has been the dominant alignment technique for frontier language models since its application in InstructGPT (Ouyang et al., 2022). The standard training loop involves three models running simultaneously: a policy model being trained, a reference model (frozen copy of the pre-RLHF checkpoint) used to compute KL-penalty against, and a reward model trained to predict human preferences. The policy model is updated to maximize reward while staying close to the reference.</p>
+      <p>In practice, these three models are often run with different precision and efficiency settings. The reward model and reference model are frozen and can therefore be heavily quantized (INT4 or INT8) to reduce memory consumption, while the policy model must maintain BF16 precision for stable gradient computation. The result is that the policy model's outputs during training are computed via a different numerical path than the reward model's scoring, introducing a systematic bias in the reward signal.</p>
+      <p>We hypothesize that this numerical asymmetry is a significant source of the instabilities commonly observed in RLHF runs at 70B+ scale: reward hacking (the policy learns to produce outputs that score well under the reward model's numerical path but not under the reference implementation), KL explosion (the policy rapidly diverges from the reference in ways the KL penalty does not adequately penalize due to reference model quantization), and mode collapse (the policy converges to a narrow distribution of high-reward outputs).</p>
+
+      <h2>2. The Train–Inference Gap</h2>
+      <h3>2.1 Sources of Numerical Divergence</h3>
+      <p>We identify four sources of numerical divergence between training and inference configurations in standard RLHF setups:</p>
+      <ol>
+        <li><strong>Quantization asymmetry:</strong> Policy model in BF16, reward and reference in INT8 or INT4. Attention outputs at the same input token can differ by up to 2.3% between BF16 and INT8 implementations at 70B scale.</li>
+        <li><strong>Attention implementation:</strong> Training uses a memory-efficient attention (Flash Attention 2) with different tile sizes than the attention implementation used in standard inference serving. Tile size affects the numerical accumulation order and therefore the exact output values.</li>
+        <li><strong>Batch construction:</strong> Training uses fixed-length padded sequences for GPU efficiency; inference uses variable-length packed sequences. This affects layer norm statistics and attention mask application in subtle ways.</li>
+        <li><strong>Positional encoding interpolation:</strong> RoPE interpolation coefficients are sometimes different between training and inference configurations, especially for long-context fine-tuning.</li>
+      </ol>
+      <p>Individually, each of these differences is small. Cumulatively, across 80 layers of a 70B transformer, they compound into measurable output distribution shifts between a model's training-time and inference-time behavior.</p>
+
+      <h3>2.2 Observing the Gap in Production</h3>
+      <p>We instrument 14 RLHF training runs on Titan-70B checkpoints with different degrees of train–inference gap, measuring KL divergence between the policy distribution at training time versus the policy distribution when the same checkpoint is loaded in inference configuration. The mean KL divergence between the two distributions is 0.041 nats at step 1 (immediately after RLHF training begins) and grows to 0.18 nats by step 10,000 — indicating that the policy is increasingly optimizing for its training-time evaluation rather than its inference-time behavior.</p>
+
+      <h2>3. Hardware-Aware RLHF Protocol</h2>
+      <h3>3.1 Unified Numerical Path</h3>
+      <p>Hardware-aware RLHF enforces that all three models (policy, reward, reference) execute on identical numerical paths throughout training. Concretely, this means:</p>
+      <ul>
+        <li>All models run in BF16 with Spartan's FP8 accumulation path for matrix multiplications. The FP8 dispatch path is the same one used in Titan's production inference serving configuration.</li>
+        <li>All models use the same attention implementation: Spartan's on-chip Flash Attention variant with fixed tile size (128 × 128 for this model size).</li>
+        <li>All models process sequences in the same packed-sequence format used by the production inference scheduler, with identical mask application logic.</li>
+        <li>RoPE interpolation coefficients are loaded from the serving configuration, not the training configuration, to ensure the model trained in hardware-aware RLHF has identical positional encoding behavior at serving time.</li>
+      </ul>
+      <p>The memory cost of running all three models in full BF16 (versus quantizing the frozen models) is partially offset by Spartan's larger HBM pool: 192 GB per accelerator is sufficient to hold all three 70B models in BF16 simultaneously with tensor parallelism across 4 GPUs, whereas H100 (80 GB per GPU) would require 8+ GPUs for the same configuration.</p>
+
+      <h3>3.2 On-Silicon Reward Computation</h3>
+      <p>A further modification is that reward computation happens on the same tensor-core paths as policy generation, rather than in a separate pass on a co-located CPU or separate GPU cluster. This eliminates a source of numerical drift that occurs when reward scores are produced on different hardware than the policy outputs being scored, and reduces reward latency by 3.4× by removing the network round-trip between policy and reward computation.</p>
+
+      <h2>4. Results</h2>
+      <table class="results-table">
+        <thead>
+          <tr><th>Method</th><th>KL drift @ 10K steps</th><th>Steps to 90% preference accuracy</th><th>Final win rate vs SFT</th><th>Reward hacking incidents</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Standard RLHF (H100)</td><td>0.180 nats</td><td>18,400</td><td>61.3%</td><td>7/14 runs</td></tr>
+          <tr><td>Standard RLHF (Spartan)</td><td>0.162 nats</td><td>16,200</td><td>63.1%</td><td>5/14 runs</td></tr>
+          <tr class="winner"><td class="accent">HW-aware RLHF (Spartan)</td><td class="accent">0.124 nats (−31%)</td><td class="accent">8,700 (2.1×)</td><td class="accent">70.4%</td><td class="accent">0/14 runs</td></tr>
+        </tbody>
+      </table>
+      <p>Hardware-aware RLHF on Spartan reduces KL drift by 31% versus standard RLHF on H100 and 23% versus standard RLHF on Spartan, confirming that the improvement comes primarily from the unified numerical path rather than from the hardware alone. Convergence to 90% preference accuracy requires 2.1× fewer training steps, reducing RLHF training cost in proportion. Reward hacking is eliminated entirely across 14 independent runs; standard RLHF with quantized reward models shows reward hacking in 5–7 of 14 runs.</p>
+
+      <h2>5. Discussion</h2>
+      <p>The elimination of reward hacking is the most significant practical result in this paper. Reward hacking in RLHF is difficult to detect without careful per-step monitoring and is expensive to recover from once it occurs (the checkpoint must be rolled back and training restarted). Our hardware-aware protocol prevents it by removing the numerical conditions that allow the policy to exploit the gap between its training and inference evaluation paths.</p>
+      <p>The 2.1× faster convergence has direct cost implications. An RLHF run that previously required 18,400 training steps now requires 8,700, reducing the compute cost roughly proportionally. At Spartan pricing, this means a full frontier-scale RLHF run costs approximately 60% less than the same run on equivalent H100 hardware, combining the hardware efficiency advantage with the reduced step count.</p>
+
+      <h2>6. Conclusion</h2>
+      <p>Hardware-aware RLHF demonstrates that the train–inference gap is a root cause of RLHF training instability, not just a deployment inconvenience. By running all components of the RLHF loop on the same silicon paths used at serving time, we eliminate reward hacking, reduce KL drift by 31%, and achieve 2.1× faster convergence. The protocol is implemented in Orion v3.2 and is available to all Nucore customers as the default RLHF configuration.</p>
+
+      <h2 id="bibtex">BibTeX</h2>
+      <div class="bibtex-block">@article{ramaswamy2025hwrlhf,
+  title={Hardware-Aware RLHF: Closing the Train--Inference
+         Gap on Co-Designed GPUs},
+  author={Ramaswamy, P. and Sato, M. and Kowalski, R.},
+  journal={Nucore Titan Research},
+  year={2025},
+  note={NCR-2025-12}
+}</div>
+
+      <h2 id="logs">Training Logs</h2>
+      <p>Per-step KL divergence traces, reward curves, and preference accuracy evaluations for all 14 runs in the hardware-aware RLHF experiment are available at <code>github.com/nucore-research/hw-rlhf-logs</code>. The repository also includes the configuration files for reproducing the hardware-aware and standard RLHF protocol setups on Spartan hardware.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Citations</h4>
+        <div class="cite-count">145</div>
+        <div class="cite-label">external citations as of June 2026</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Resources</h4>
+        <div class="sidebar-links">
+          <a href="#bibtex">→ BibTeX</a>
+          <a href="#logs">→ Training logs</a>
+          <a href="../products.html#orion">→ Orion (ships this protocol)</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related papers</h4>
+        <div class="sidebar-related">
+          <a href="orion.html">Orion: Autonomous Agent for LLM Fine-Tuning</a>
+          <a href="helios.html">Helios: Data Annotation Engine</a>
+          <a href="fp8-energy.html">Energy-Efficient FP8 Pathways</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Stable RLHF, end to end.</h2>
+      <p>Hardware-aware RLHF ships in Orion v3.2 — available to all Nucore customers by default.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Get access</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

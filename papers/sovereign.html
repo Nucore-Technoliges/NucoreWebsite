@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sovereign Inference: Cryptographic Attestation for On-Premise Frontier Models | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag">SECURITY RESEARCH</span>
+      <span class="tag tag--neutral">NCR-2025-11</span>
+    </div>
+    <h1>Sovereign Inference: Cryptographic Attestation for On-Premise Frontier Models</h1>
+    <p class="paper-byline">T. Bauer, N. Zhou · Nucore Security Research</p>
+    <p class="paper-id">November 2025 · NCR-2025-11</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>0.4ms</strong><span>Attestation overhead</span></div>
+      <div class="paper-stat"><strong>Jun 2025</strong><span>Deployed since</span></div>
+      <div class="paper-stat"><strong>0</strong><span>False attestations in production</span></div>
+      <div class="paper-stat"><strong>102</strong><span>External citations</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Abstract</h2>
+      <p>Sovereign AI deployments — classified networks, regulated industries, national security environments — require verifiable answers to two questions: which model weights executed, and on which physical hardware. Existing solutions rely on software attestation, which can be spoofed by a compromised hypervisor or operating system. We present a hardware-rooted attestation protocol for Nucore Spartan that signs the active model weights, the firmware revision, and the per-request inference trace, producing an auditable chain of custody verifiable by any third party with the public attestation key. The protocol adds 0.4 ms of overhead per request and has been deployed on classified-network Spartan clusters across three sovereign AI programs since June 2025, with zero false attestations recorded across 847 million attested requests.</p>
+
+      <h2>1. Introduction</h2>
+      <p>As frontier language models are deployed in sensitive environments — defense intelligence analysis, classified research, regulatory compliance workflows, critical infrastructure — the question of model identity becomes security-critical. A compliance officer must be able to answer: "When this decision was made using AI, exactly which model made it?" A national security analyst must be able to verify: "This analysis was produced by the approved model version, running on approved silicon, and has not been intercepted or tampered with."</p>
+      <p>Software attestation — having the software stack report its own configuration — is insufficient for high-assurance environments because it can be spoofed by a compromised operating system, hypervisor, or container runtime. What is needed is hardware-rooted attestation: a cryptographic signature produced by the physical silicon that cannot be forged by any software-level compromise.</p>
+      <p>This paper describes the design, implementation, and production deployment of a hardware-rooted attestation protocol for Spartan that provides this assurance.</p>
+
+      <h2>2. Threat Model</h2>
+      <h3 id="threat-model">2.1 Adversary Capabilities</h3>
+      <p>We consider adversaries with the following capabilities:</p>
+      <ul>
+        <li><strong>Software compromise:</strong> The adversary has root access to the operating system and hypervisor running on the Spartan host. They can modify software, intercept system calls, and inject code into running processes.</li>
+        <li><strong>Weight substitution:</strong> The adversary can substitute a different set of model weights (e.g., a backdoored or censored version) for the approved weights at runtime.</li>
+        <li><strong>Response fabrication:</strong> The adversary can intercept model outputs and substitute fabricated responses that appear to come from the legitimate model.</li>
+      </ul>
+      <p>We do not consider adversaries with physical access to unseal the Spartan silicon package and probe the hardware directly. Physical attacks on sealed silicon are outside the practical threat model for the environments we target.</p>
+
+      <h3>2.2 Security Goals</h3>
+      <p>The protocol must provide the following guarantees:</p>
+      <ol>
+        <li><strong>Weight identity:</strong> The attestation proves that a specific, approved set of model weights (identified by a cryptographic hash) executed the request.</li>
+        <li><strong>Hardware identity:</strong> The attestation proves that the computation ran on a specific, identified piece of Spartan silicon (identified by a per-device key provisioned at manufacturing time).</li>
+        <li><strong>Firmware integrity:</strong> The attestation proves that the approved firmware revision was active, ruling out firmware-level compromise.</li>
+        <li><strong>Request binding:</strong> The attestation is bound to the specific inference request (input prompt + output tokens), preventing replay attacks with prior attestations.</li>
+      </ol>
+
+      <h2>3. Protocol Design</h2>
+      <h3>3.1 Hardware Root of Trust</h3>
+      <p>Each Spartan accelerator is provisioned at manufacturing time with a unique Ed25519 key pair stored in a write-once, read-protected memory region on the silicon die. The private key never leaves the silicon; the public key is registered with Nucore's attestation certificate authority at provisioning and can be queried by any party authorized to verify attestations.</p>
+      <p>The attestation signing operation runs in a dedicated hardware security module (HSM) subsystem on the Spartan die, physically isolated from the tensor-core compute fabric. The HSM can only be triggered by the firmware — not by software running above the driver layer — ensuring that a software-level adversary cannot generate fake attestations.</p>
+
+      <h3>3.2 Attestation Payload Structure</h3>
+      <p>For each inference request, the HSM assembles and signs an attestation payload containing:</p>
+      <ul>
+        <li><code>device_id</code>: The silicon serial number (256-bit)</li>
+        <li><code>firmware_hash</code>: SHA-3-256 hash of the active firmware image</li>
+        <li><code>weight_hash</code>: SHA-3-256 hash of the loaded model weights, computed at load time and cached in the HSM</li>
+        <li><code>request_hash</code>: SHA-3-256 hash of the input prompt (after tokenization)</li>
+        <li><code>response_hash</code>: SHA-3-256 hash of the generated output token sequence</li>
+        <li><code>timestamp</code>: Hardware clock timestamp with microsecond resolution</li>
+        <li><code>signature</code>: Ed25519 signature over the concatenation of the above fields</li>
+      </ul>
+      <p>The attestation payload is returned alongside the inference response. The receiving party verifies the signature against the device's registered public key (retrieved from the Nucore attestation CA or a local certificate store in air-gapped deployments).</p>
+
+      <h3>3.3 Weight Hash Caching and Update</h3>
+      <p>Computing the SHA-3-256 hash of full model weights (approximately 140 GB for Titan-70B in BF16) is expensive if done per request. The HSM caches the weight hash at model load time and invalidates it when any portion of loaded weights changes. The weight hash computation at load time takes approximately 2.8 seconds on Spartan's DMA engine; this is a one-time cost amortized across all subsequent inference requests, contributing less than 0.01 ms to per-request attestation overhead.</p>
+
+      <h2>4. Performance Impact</h2>
+      <p>The attestation protocol adds 0.4 ms of overhead per request, measured as the additional latency introduced by the HSM signing operation. This overhead is dominated by the Ed25519 signing operation (approximately 0.32 ms) and the SHA-3-256 hash of the request and response (approximately 0.06 ms combined for typical prompt + response lengths).</p>
+      <p>The 0.4 ms overhead represents 3.3% of the median TTFT (11.8 ms) reported in our concurrent production study. For latency-sensitive deployments that cannot accept this overhead, attestation can be configured for a sampled fraction of requests (default: 100% sampling in classified deployments, 10% in commercial high-throughput deployments) with the full audit trail reconstructable from the sampled attestation log.</p>
+
+      <h2>5. Deployment Experience</h2>
+      <p>The attestation protocol has been deployed on Spartan clusters in three sovereign AI programs since June 2025. Over this period, we have recorded 847 million attested inference requests with zero false attestations (attestations that verify correctly but correspond to a request where the signed conditions were not actually met).</p>
+      <p>We have recorded two attestation failures: cases where the attestation signature could not be verified by the receiving party. Both were attributable to clock skew between the Spartan hardware clock and the verifier's expected timestamp range (a configuration issue, not a protocol flaw), and were resolved by synchronizing the acceptable timestamp window in the verification configuration.</p>
+
+      <h2>6. Conclusion</h2>
+      <p>Hardware-rooted attestation for LLM inference provides a level of assurance not achievable by software-only approaches. By anchoring the attestation signature in silicon-level keys that cannot be accessed by software, our protocol makes it cryptographically infeasible for a software-level adversary to forge an attestation, substitute model weights, or fabricate responses without detection. The 0.4 ms overhead makes the protocol practical for production deployments.</p>
+
+      <h2 id="bibtex">BibTeX</h2>
+      <div class="bibtex-block">@article{bauer2025sovereign,
+  title={Sovereign Inference: Cryptographic Attestation for
+         On-Premise Frontier Models},
+  author={Bauer, T. and Zhou, N.},
+  journal={Nucore Security Research},
+  year={2025},
+  note={NCR-2025-11}
+}</div>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Citations</h4>
+        <div class="cite-count">102</div>
+        <div class="cite-label">external citations as of June 2026</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Resources</h4>
+        <div class="sidebar-links">
+          <a href="#bibtex">→ BibTeX</a>
+          <a href="#threat-model">→ Threat model</a>
+          <a href="../contact.html">→ Sovereign deployment inquiry</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related papers</h4>
+        <div class="sidebar-related">
+          <a href="ttft-production.html">Sub-12ms TTFT Production Study</a>
+          <a href="moe-codesign.html">Architectural Co-Design for MoE</a>
+          <a href="kv-cache.html">Memory-Persistent Agent Loops</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Verifiable AI for classified environments.</h2>
+      <p>Talk to us about sovereign Spartan deployments with hardware-rooted attestation.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Contact us</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>

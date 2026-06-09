@@ -17,7 +17,7 @@
     <div class="wrap hero-copy">
       <p class="label" data-reveal>Nucore Research</p>
       <h1 class="display-xl headline-split">Hardware-aware AI,<br>published openly.</h1>
-      <p data-reveal data-delay="0.3">We publish what we learn building the Spartan platform — silicon-level benchmarks, agent-scaling studies, and the engineering behind Titan and Orion. Our work is read by infrastructure teams at frontier labs, hyperscalers, and government research programs.</p>
+      <p data-reveal data-delay="0.3">We publish what we learn building the Spartan and Kronos platforms — silicon-level benchmarks, agent-scaling studies, and the engineering behind Titan, Orion, Cloak, and Helios. Our work is read by infrastructure teams at frontier labs, hyperscalers, and government research programs.</p>
 
       <div class="research-stats" data-reveal data-delay="0.45">
         <div class="rs-cell"><span class="rs-num count-up">37</span><p>peer-reviewed papers</p></div>
@@ -40,7 +40,7 @@
   <section class="section section-light section-fit" id="thesis">
     <div class="wrap">
       <p class="label" data-reveal>What we work on</p>
-      <h2 class="display-lg headline-split" data-reveal data-delay="0.1">Three threads.<br>One co-designed stack.</h2>
+      <h2 class="display-lg headline-split" data-reveal data-delay="0.1">Four threads.<br>One co-designed stack.</h2>
       <div class="pillar-columns" style="margin-top:48px">
         <article data-reveal>
           <h2>Performance per dollar</h2>
@@ -67,6 +67,15 @@
             <li>Kernel-level weight tuning for Titan</li>
             <li>Hardware-aware RLHF and DPO</li>
             <li>Co-designed sparsity and quantization</li>
+          </ul>
+        </article>
+        <article data-reveal data-delay="0.3">
+          <h2>Data pipelines for LLMs</h2>
+          <p class="muted">How raw organizational data becomes training-ready corpora. The Helios data engine studies cover deduplication at scale, annotation quality, active learning for RLHF preference data, and the end-to-end throughput of data pipelines on Nucore infrastructure.</p>
+          <ul class="list-reveal">
+            <li>Deduplication and quality filtering at trillion-token scale</li>
+            <li>Active learning for RLHF preference datasets</li>
+            <li>Pipeline throughput on Nucore Helios + Spartan</li>
           </ul>
         </article>
       </div>
@@ -99,9 +108,9 @@
       </div>
 
       <div class="paper-cta">
-        <a class="btn btn--outline btn--white" href="#">Read full paper (PDF)</a>
-        <a class="btn-link" href="#">Reproducibility kit →</a>
-        <a class="btn-link" href="#">BibTeX →</a>
+        <a class="btn btn--outline btn--white" href="papers/moe-codesign.html">Read full paper</a>
+        <a class="btn-link" href="papers/moe-codesign.html#reproducibility">Reproducibility kit →</a>
+        <a class="btn-link" href="papers/moe-codesign.html#bibtex">BibTeX →</a>
       </div>
     </div>
   </section>
@@ -117,6 +126,24 @@
         <article class="paper-card" data-reveal data-delay="0.05">
           <div class="pc-meta">
             <span class="tag">RESEARCH</span>
+            <span class="pc-date">May 2026</span>
+            <span class="pc-cite">cited 47×</span>
+          </div>
+          <h3>Helios: A Scalable Data Annotation Engine for LLM Pretraining and RLHF Pipelines</h3>
+          <p class="paper-meta">S. Iyer, N. Zhou, K. Olsen — Nucore Data Research</p>
+          <p class="pc-abstract">We introduce Helios, a data engine purpose-built to transform raw organizational data into high-quality labeled corpora for large language model training. Helios combines deduplication at billion-token scale, classifier-guided quality filtering, active learning for preference dataset construction, and human review queuing into a single orchestrated pipeline. On a 2.4-trillion-token pretraining run, Helios reduces pipeline wall-clock time by 3.1× over comparable open-source tooling and produces training datasets with 18% higher downstream benchmark scores than the same raw data processed through standard deduplication-only pipelines.</p>
+          <div class="pc-findings">
+            <span>3.1× faster pipeline</span><span>·</span><span>2.4T token run</span><span>·</span><span>18% benchmark uplift</span>
+          </div>
+          <div class="pc-cta">
+            <a href="papers/helios.html">Read paper →</a>
+            <a href="papers/helios.html#code">Pipeline code →</a>
+          </div>
+        </article>
+
+        <article class="paper-card" data-reveal data-delay="0.05">
+          <div class="pc-meta">
+            <span class="tag">RESEARCH</span>
             <span class="pc-date">March 2026</span>
             <span class="pc-cite">cited 184×</span>
           </div>
@@ -127,8 +154,8 @@
             <span>12 ms median TTFT</span><span>·</span><span>38 ms p99</span><span>·</span><span>78% cold-start reduction</span>
           </div>
           <div class="pc-cta">
-            <a href="#">Read paper →</a>
-            <a href="#">Benchmark harness →</a>
+            <a href="papers/ttft-production.html">Read paper →</a>
+            <a href="papers/ttft-production.html#benchmark">Benchmark harness →</a>
           </div>
         </article>
 
@@ -145,8 +172,8 @@
             <span>21/24 benchmarks won</span><span>·</span><span>6 domain corpora</span><span>·</span><span>Hyperparameter-free</span>
           </div>
           <div class="pc-cta">
-            <a href="#">Read paper →</a>
-            <a href="#">Code &amp; recipes →</a>
+            <a href="papers/orion.html">Read paper →</a>
+            <a href="papers/orion.html#recipes">Code &amp; recipes →</a>
           </div>
         </article>
 
@@ -163,8 +190,8 @@
             <span>8.3× lower per-step latency</span><span>·</span><span>4,000-step reasoning loops</span><span>·</span><span>192 GB persistent KV</span>
           </div>
           <div class="pc-cta">
-            <a href="#">Read paper →</a>
-            <a href="#">Microbenchmarks →</a>
+            <a href="papers/kv-cache.html">Read paper →</a>
+            <a href="papers/kv-cache.html#microbenchmarks">Microbenchmarks →</a>
           </div>
         </article>
 
@@ -181,8 +208,8 @@
             <span>31% lower KL drift</span><span>·</span><span>2.1× faster convergence</span><span>·</span><span>70B Titan checkpoints</span>
           </div>
           <div class="pc-cta">
-            <a href="#">Read paper →</a>
-            <a href="#">Training logs →</a>
+            <a href="papers/rlhf.html">Read paper →</a>
+            <a href="papers/rlhf.html#logs">Training logs →</a>
           </div>
         </article>
 
@@ -199,8 +226,8 @@
             <span>0.4 ms attestation overhead</span><span>·</span><span>Hardware-rooted signing</span><span>·</span><span>Deployed since Jun 2025</span>
           </div>
           <div class="pc-cta">
-            <a href="#">Read paper →</a>
-            <a href="#">Threat model →</a>
+            <a href="papers/sovereign.html">Read paper →</a>
+            <a href="papers/sovereign.html#threat-model">Threat model →</a>
           </div>
         </article>
 
@@ -217,8 +244,8 @@
             <span>2.1× perf per kilowatt</span><span>·</span><span>400B-param run</span><span>·</span><span>384-GPU cluster</span>
           </div>
           <div class="pc-cta">
-            <a href="#">Read paper →</a>
-            <a href="#">Energy traces →</a>
+            <a href="papers/fp8-energy.html">Read paper →</a>
+            <a href="papers/fp8-energy.html#traces">Energy traces →</a>
           </div>
         </article>
 
@@ -241,7 +268,7 @@
             <p class="muted">Like-for-like evaluation of Titan-405B against the leading open-weight frontier models on AgentBench-Hard, ReAct-100, and the Nucore Long-Horizon Suite. Includes per-task breakdowns, failure-mode analysis, and a discussion of why agentic reasoning resists naive scaling.</p>
             <span class="report-meta">Nucore Titan Research · May 2026 · 42 pp.</span>
           </div>
-          <a href="#" class="btn-link">PDF →</a>
+          <a href="papers/titan-agentbench.html" class="btn-link">Read →</a>
         </article>
 
         <article class="report-row" data-reveal data-delay="0.1">
@@ -251,7 +278,7 @@
             <p class="muted">Field data from 14 Spartan customer deployments across finance, defense, and biotech. Capital expenditure, power, cooling, depreciation, and staff cost all itemized against an equivalent cloud-hosted baseline. Result: 58% lower TCO at the 24-month horizon, with full sensitivity analysis.</p>
             <span class="report-meta">Nucore Systems Group · April 2026 · 28 pp.</span>
           </div>
-          <a href="#" class="btn-link">PDF →</a>
+          <a href="papers/tco-study.html" class="btn-link">Read →</a>
         </article>
 
         <article class="report-row" data-reveal data-delay="0.15">
@@ -261,7 +288,7 @@
             <p class="muted">A thesis-level whitepaper on the architectural mismatch between commodity GPU stacks and the workload profile of long-horizon agents. Lays out the design principles behind the Spartan platform and the empirical evidence supporting them.</p>
             <span class="report-meta">D. Brennan, A. Cheng · February 2026 · 18 pp.</span>
           </div>
-          <a href="#" class="btn-link">PDF →</a>
+          <a href="papers/codesign-whitepaper.html" class="btn-link">Read →</a>
         </article>
 
         <article class="report-row" data-reveal data-delay="0.2">
@@ -271,7 +298,7 @@
             <p class="muted">A reference catalog of fine-tuning recipes shipping inside Orion v3.2 — covering LoRA, full SFT, RLHF, DPO, and continued pretraining. Each recipe includes hyperparameter ranges, expected wall-clock time on a 32-GPU Spartan rack, and benchmark deltas relative to the base checkpoint.</p>
             <span class="report-meta">Nucore Orion Team · December 2025 · 36 pp.</span>
           </div>
-          <a href="#" class="btn-link">PDF →</a>
+          <a href="papers/orion.html#recipes" class="btn-link">Read →</a>
         </article>
 
         <article class="report-row" data-reveal data-delay="0.25">
@@ -281,7 +308,7 @@
             <p class="muted">A practitioner's guide to deploying Spartan at density. Liquid-cooling loops, power-delivery topology, rack-level airflow modeling, and the failure modes we have actually seen in the field. Written for facilities engineers.</p>
             <span class="report-meta">Nucore Hardware Research · October 2025 · 24 pp.</span>
           </div>
-          <a href="#" class="btn-link">PDF →</a>
+          <a href="papers/spartan-cooling.html" class="btn-link">Read →</a>
         </article>
       </div>
     </div>
@@ -329,7 +356,7 @@
 
 <footer class="site-footer">
   <div class="footer-grid">
-    <div><h3>Products</h3><a href="products.html#spartan">Spartan</a><a href="products.html#kronos">Kronos</a><a href="products.html#titan">Titan</a><a href="products.html#orion">Orion</a><a href="products.html#cloak">Cloak</a><a href="products.html#platform">Platform</a></div>
+    <div><h3>Products</h3><a href="products.html#spartan">Spartan</a><a href="products.html#kronos">Kronos</a><a href="products.html#titan">Titan</a><a href="products.html#orion">Orion</a><a href="products.html#cloak">Cloak</a><a href="products.html#helios">Helios</a><a href="products.html#platform">Platform</a></div>
     <div><h3>Company</h3><a href="contact.html">Contact</a></div>
     <div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div>
     <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div>

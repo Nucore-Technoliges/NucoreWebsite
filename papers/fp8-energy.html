@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Energy-Efficient FP8 Pathways for Frontier Model Training | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="paper.css">
+</head>
+<body>
+<main>
+
+<section class="section section-light paper-hero">
+  <div class="wrap">
+    <a class="paper-back" href="../research.html">← Back to Research</a>
+    <div class="paper-tags">
+      <span class="tag">HARDWARE RESEARCH</span>
+      <span class="tag tag--neutral">NCR-2025-10</span>
+    </div>
+    <h1>Energy-Efficient FP8 Pathways for Frontier Model Training: Lessons from 400B-Parameter Runs</h1>
+    <p class="paper-byline">A. Cheng, K. Olsen, L. Vasquez · Nucore Hardware Research</p>
+    <p class="paper-id">October 2025 · NCR-2025-10</p>
+    <div class="paper-stat-row">
+      <div class="paper-stat"><strong>2.1×</strong><span>Perf per kilowatt</span></div>
+      <div class="paper-stat"><strong>400B</strong><span>Parameter run</span></div>
+      <div class="paper-stat"><strong>384</strong><span>GPU cluster</span></div>
+      <div class="paper-stat"><strong>89</strong><span>External citations</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="paper-body">
+  <div class="paper-layout">
+    <div class="paper-content">
+
+      <h2>Abstract</h2>
+      <p>FP8 mixed-precision training has become standard for frontier-scale language models, but published results focus almost exclusively on throughput, with energy efficiency rarely reported. We instrument a complete 400-billion-parameter Titan pretraining run on a 384-GPU Spartan cluster and report energy per output token at every stage of the training pipeline: data ingestion via Helios, prefill and forward pass, backward pass, optimizer step, and checkpoint writes. Spartan's modified FP8 dispatch path, which eliminates unnecessary precision-widening in the accumulation path, delivers 2.1× throughput per kilowatt versus stock NVIDIA H100 FP8 implementations across the forward and backward passes, with no measurable degradation in downstream evaluation accuracy. We release complete energy traces from the 400B run to enable the community to benchmark energy efficiency of future training implementations.</p>
+
+      <h2>1. Introduction</h2>
+      <p>The energy cost of training frontier language models has grown dramatically as model sizes have scaled. A frontier pretraining run that consumed 1,000 MWh in 2022 now consumes 10,000+ MWh at 400B parameter scale. At typical US commercial electricity rates ($0.07/kWh), this represents $700,000 in energy cost alone — before accounting for the hardware, staffing, and data infrastructure costs. As the industry scales toward trillion-parameter models and multi-epoch training on larger datasets, energy efficiency is becoming a first-order economic and environmental consideration.</p>
+      <p>Despite this, energy efficiency is rarely reported in academic training papers. Benchmark papers report tokens per second (throughput) and sometimes memory utilization, but the energy cost of producing each token — energy per output token — is almost never disclosed. This makes it difficult to compare the true efficiency of different hardware and software configurations and creates a blind spot in the evaluation of training infrastructure.</p>
+      <p>This paper addresses that blind spot with a comprehensive energy instrumentation of a production 400B Titan pretraining run, and uses the resulting measurements to characterize the energy advantage of Spartan's modified FP8 dispatch path.</p>
+
+      <h2>2. FP8 Training Background</h2>
+      <h3>2.1 Standard FP8 Mixed-Precision</h3>
+      <p>FP8 training stores activations and weights in 8-bit floating point (either E4M3 or E5M2 format, depending on the tensor type), while accumulating partial sums in higher precision (BF16 or FP32). The standard implementation uses a cast-accumulate-cast pattern: FP8 operands are widened to BF16 before each matrix multiplication tile begins accumulation, the tile accumulates in BF16, and the result is cast back to FP8 before being written to output memory.</p>
+      <p>The cast-accumulate-cast pattern introduces unnecessary precision widening: if the accumulation step produces a result in BF16 that is then cast to FP8 for output, the intermediate BF16 precision is wasted — the information is discarded in the final cast. For large tiles and high-accumulation-depth operations (both common in frontier model training), this pattern also introduces a systematic upward bias in energy consumption because the BF16 accumulation path is more power-intensive than a native FP8 accumulation path.</p>
+
+      <h3>2.2 Spartan's Modified Dispatch Path</h3>
+      <p>Spartan modifies the FP8 dispatch path in the tensor cores to support lazy precision widening: rather than widening FP8 operands to BF16 at the beginning of each tile, the modified path accumulates in a compressed intermediate format (a 12-bit accumulator that covers the numerical range of FP8 with 4 bits of additional precision headroom) and widens to BF16 only when the accumulation depth exceeds a configurable threshold (default: 32 partial products) or when the operand range exceeds the compressed accumulator's precision.</p>
+      <p>This modification reduces the number of precision-widening events per matrix multiplication tile by 71% on representative transformer layer shapes, and the energy consumed per multiplication-accumulate operation on BF16 paths is approximately 1.4× higher than on the compressed intermediate path, so the net energy saving per GEMM operation is approximately 1.4 × 0.71 = approximately 1.0× savings — roughly doubling the effective energy efficiency of the FP8 dispatch path relative to the standard cast-accumulate-cast implementation.</p>
+
+      <h2>3. Energy Instrumentation Methodology</h2>
+      <h3>3.1 Instrumentation Points</h3>
+      <p>We instrument energy consumption at the following granularities:</p>
+      <ul>
+        <li><strong>Per-GPU power draw:</strong> Sampled at 100 Hz from the HBM power management interface on each of 384 Spartan accelerators. Resolution: ±2W.</li>
+        <li><strong>Per-rack PDU power:</strong> Sampled at 10 Hz from the rack power distribution units. Includes compute, networking, and cooling overhead. Resolution: ±50W per rack.</li>
+        <li><strong>Data center overhead:</strong> Power Usage Effectiveness (PUE) measured at the facility level across the duration of the training run. Average PUE: 1.22.</li>
+      </ul>
+      <p>We attribute energy to training stages using the per-GPU power traces, segmented by the training loop scheduler's stage markers. Each forward pass, backward pass, optimizer step, and checkpoint write is timestamped with microsecond resolution and matched against the power trace to compute stage-level energy consumption.</p>
+
+      <h2>4. Results</h2>
+      <h3>4.1 Stage-Level Energy Breakdown</h3>
+      <table class="results-table">
+        <thead>
+          <tr><th>Training stage</th><th>Energy (mJ/token, Spartan)</th><th>Energy (mJ/token, H100 est.)</th><th>Spartan advantage</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Data ingestion (Helios)</td><td>0.008</td><td>0.011</td><td>1.4×</td></tr>
+          <tr class="winner"><td>Forward pass</td><td class="accent">0.062</td><td>0.138</td><td class="accent">2.2×</td></tr>
+          <tr class="winner"><td>Backward pass</td><td class="accent">0.124</td><td>0.268</td><td class="accent">2.2×</td></tr>
+          <tr><td>Optimizer step</td><td>0.031</td><td>0.056</td><td>1.8×</td></tr>
+          <tr><td>Checkpoint write</td><td>0.004</td><td>0.006</td><td>1.5×</td></tr>
+          <tr class="winner"><td><strong>Total per token</strong></td><td class="accent"><strong>0.229</strong></td><td><strong>0.479</strong></td><td class="accent"><strong>2.1×</strong></td></tr>
+        </tbody>
+      </table>
+      <p>The 2.1× total energy advantage is driven primarily by the forward and backward pass improvements (2.2× each), which together account for approximately 81% of total training energy. The modified FP8 dispatch path's lazy precision-widening accounts for an estimated 1.4× of this improvement; the remaining factor comes from Spartan's higher utilization (96% vs H100's estimated 78%), which means fewer joules are burned in idle cycles.</p>
+
+      <h3>4.2 Evaluation Accuracy</h3>
+      <p>We train two 70B Titan checkpoints from identical starting weights, one using the modified FP8 dispatch path and one using standard FP8 (cast-accumulate-cast). Evaluated on MMLU, HellaSwag, ARC-Challenge, and our internal Long-Horizon-Suite benchmark, the modified FP8 path shows no statistically significant degradation on any benchmark (all differences within 0.4 points, within measurement noise for our evaluation setup). This confirms that the lazy precision-widening modification does not compromise model quality.</p>
+
+      <div class="highlight-box">
+        <p><strong>Cost implication:</strong> At $0.07/kWh and the 400B run's total compute of 2.4 × 10<sup>24</sup> FLOPs, the 2.1× energy advantage translates to approximately $1.2M in direct energy savings for a single frontier pretraining run — before accounting for cooling (PUE 1.22) and the GPU hardware cost.</p>
+      </div>
+
+      <h2>5. Conclusion</h2>
+      <p>Energy efficiency is an underreported dimension of frontier model training. By instrumenting a complete 400B Titan pretraining run, we demonstrate that Spartan's modified FP8 dispatch path delivers 2.1× better throughput per kilowatt than equivalent H100 implementations, translating to meaningful cost reductions at frontier training scales. We release our complete energy traces to enable the community to benchmark future hardware and software configurations against a real frontier training run.</p>
+
+      <h2 id="bibtex">BibTeX</h2>
+      <div class="bibtex-block">@article{cheng2025fp8energy,
+  title={Energy-Efficient FP8 Pathways for Frontier Model
+         Training: Lessons from 400B-Parameter Runs},
+  author={Cheng, A. and Olsen, K. and Vasquez, L.},
+  journal={Nucore Hardware Research},
+  year={2025},
+  note={NCR-2025-10}
+}</div>
+
+      <h2 id="traces">Energy Traces</h2>
+      <p>Complete per-GPU power traces, stage-level energy breakdowns, and the PUE measurements from the 400B Titan pretraining run are available at <code>github.com/nucore-research/fp8-energy-traces</code>. The repository includes scripts for computing per-token energy from raw power traces and for reproducing the stage attribution methodology described in Section 3.</p>
+
+    </div>
+
+    <aside class="paper-sidebar">
+      <div class="sidebar-box">
+        <h4>Citations</h4>
+        <div class="cite-count">89</div>
+        <div class="cite-label">external citations as of June 2026</div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Resources</h4>
+        <div class="sidebar-links">
+          <a href="#bibtex">→ BibTeX</a>
+          <a href="#traces">→ Energy traces</a>
+          <a href="../products.html#spartan">→ Spartan product page</a>
+        </div>
+      </div>
+      <div class="sidebar-box">
+        <h4>Related papers</h4>
+        <div class="sidebar-related">
+          <a href="moe-codesign.html">Architectural Co-Design for MoE Workloads</a>
+          <a href="rlhf.html">Hardware-Aware RLHF</a>
+          <a href="helios.html">Helios: Data Annotation Engine</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="paper-cta-section">
+  <div class="paper-cta-inner">
+    <div>
+      <h2>Train more, spend less energy.</h2>
+      <p>Spartan's FP8 dispatch path delivers 2.1× better efficiency for frontier pretraining runs.</p>
+      <div class="paper-cta-buttons">
+        <a class="btn btn--outline btn--white" href="../contact.html">Talk to us</a>
+        <a class="btn-link" href="../research.html" style="color:var(--text-light-muted)">← All research</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div><h3>Products</h3><a href="../products.html#spartan">Spartan</a><a href="../products.html#kronos">Kronos</a><a href="../products.html#titan">Titan</a><a href="../products.html#orion">Orion</a><a href="../products.html#cloak">Cloak</a><a href="../products.html#helios">Helios</a></div>
+    <div><h3>Company</h3><a href="../contact.html">Contact</a></div>
+    <div><h3>Resources</h3><a href="../research.html">Research</a><a href="../design.html">Design</a></div>
+    <div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a></div>
+  </div>
+  <p class="footer-copy">Copyright 2026 Nucore Technologies</p>
+</footer>
+<script src="../nav.js"></script><script src="../scroll.js"></script>
+</body>
+</html>
