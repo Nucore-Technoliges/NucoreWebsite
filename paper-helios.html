@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Helios: Turning Raw Data Into Training Fuel | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <section class="section section-light section-fit" style="padding-top: calc(var(--nav-h) + 56px)">
+    <div class="wrap paper-head">
+      <a class="paper-back" href="research.html">&larr; Back to Research</a>
+      <span class="tag tag--neutral">WHITEPAPER</span>
+      <h1>Helios: Turning Raw Data Into Training Fuel</h1>
+      <div class="paper-meta"><span>Nucore Technologies</span><span>May 2026</span></div>
+    </div>
+  </section>
+
+  <section class="section section-light section-fit" style="padding-top: 0">
+    <div class="wrap paper-prose">
+      <div class="paper-abstract">
+        <span class="label">Summary</span>
+        <p>Helios is Nucore's data engine. It takes raw, unsorted data and labels and annotates it, turning it into clean training data that helps large language models get better.</p>
+      </div>
+
+      <h2>The problem</h2>
+      <p>Models learn from labeled data, but most companies only have raw data: documents, transcripts, logs, and images with no labels on them. Labeling it all by hand is slow and costly. Letting a computer label all of it is cheap but messy, and messy data holds a model back.</p>
+
+      <h2>Our approach</h2>
+      <p>Helios mixes automatic labeling with a little human help, so it gets the best of both.</p>
+      <ul>
+        <li><strong>Take in raw data.</strong> It accepts data of any kind and cleans it up into a common format.</li>
+        <li><strong>Label automatically.</strong> Models add a first pass of labels and say how confident they are.</li>
+        <li><strong>Ask a human only when needed.</strong> The easy, confident cases are kept as-is. Only the unsure ones go to a person to check.</li>
+        <li><strong>Send it to training.</strong> The checked, labeled data is exported and ready to train or fine-tune a model.</li>
+      </ul>
+
+      <h2>Why it matters</h2>
+      <p>By asking humans to review only the hard cases, Helios reaches near hand-labeled quality at a fraction of the effort. And as the model improves, it gets more confident, so even less human review is needed over time.</p>
+
+      <h2>Takeaway</h2>
+      <p>Good data is what makes models better. Helios turns the raw data a company already has into high-quality training fuel, quickly and affordably.</p>
+    </div>
+  </section>
+</main>
+<footer class="site-footer"><div class="footer-grid"><div><h3>Products</h3><a href="products.html#spartan">Spartan</a><a href="products.html#kronos">Kronos</a><a href="products.html#cloak">Nucore Cloak</a><a href="products.html#helios">Helios</a></div><div><h3>Company</h3><a href="contact.html">Contact</a></div><div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div><div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div></div><p class="footer-copy">Copyright 2026 Nucore Technologies</p></footer>
+<script src="nav.js"></script><script src="scroll.js"></script>
+</body>
+</html>

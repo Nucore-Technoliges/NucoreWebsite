@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spartan: Compute Built for Agentic AI | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <section class="section section-light section-fit" style="padding-top: calc(var(--nav-h) + 56px)">
+    <div class="wrap paper-head">
+      <a class="paper-back" href="research.html">&larr; Back to Research</a>
+      <span class="tag">RESEARCH</span>
+      <h1>Spartan: Compute Built for Agentic AI</h1>
+      <div class="paper-meta"><span>Nucore Technologies</span><span>March 2026</span></div>
+    </div>
+  </section>
+
+  <section class="section section-light section-fit" style="padding-top: 0">
+    <div class="wrap paper-prose">
+      <div class="paper-abstract">
+        <span class="label">Summary</span>
+        <p>Spartan is Nucore's compute infrastructure for agentic AI. Agents plan, call tools, and think in loops, which puts pressure on memory rather than raw speed. Spartan is tuned for that, so teams get more useful work per dollar than they would from a general-purpose cloud GPU.</p>
+      </div>
+
+      <h2>The problem</h2>
+      <p>Most hardware is measured on how fast it can do one big calculation. But an AI agent does not work that way. It takes many small steps: it reads context, calls a tool, waits, and continues. Between steps it has to hold on to everything it has learned so far. That means the real bottleneck is memory, not peak speed.</p>
+
+      <h2>Our approach</h2>
+      <p>Spartan starts from a standard NVIDIA chip and is modified by Nucore to fit how agents actually run. The main changes are:</p>
+      <ul>
+        <li><strong>Hold state cheaply.</strong> Keep an agent's memory ready between steps instead of rebuilding it each time.</li>
+        <li><strong>Pack more work together.</strong> Run many partly-idle agents on one unit so the hardware is never wasted.</li>
+        <li><strong>Tune for bursty load.</strong> Set power and cooling for the start-stop pattern of agent work, not steady batch jobs.</li>
+      </ul>
+
+      <h2>What we see</h2>
+      <p>On agent workloads, Spartan does about twice the useful work per dollar of a comparable cloud GPU, and the gap grows as agents run longer and take more steps. Because Spartan runs on your own hardware, there are no cloud egress fees and your data stays with you.</p>
+
+      <h2>Takeaway</h2>
+      <p>Agentic AI should be measured by tasks finished per dollar, not peak speed. By building for memory and concurrency, Spartan gives teams more agent throughput for less.</p>
+    </div>
+  </section>
+</main>
+<footer class="site-footer"><div class="footer-grid"><div><h3>Products</h3><a href="products.html#spartan">Spartan</a><a href="products.html#kronos">Kronos</a><a href="products.html#cloak">Nucore Cloak</a><a href="products.html#helios">Helios</a></div><div><h3>Company</h3><a href="contact.html">Contact</a></div><div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div><div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div></div><p class="footer-copy">Copyright 2026 Nucore Technologies</p></footer>
+<script src="nav.js"></script><script src="scroll.js"></script>
+</body>
+</html>

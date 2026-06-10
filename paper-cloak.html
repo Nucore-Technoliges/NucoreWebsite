@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nucore Cloak: Stopping Data Leaks to AI Tools | Nucore Research</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&family=Figtree:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <section class="section section-light section-fit" style="padding-top: calc(var(--nav-h) + 56px)">
+    <div class="wrap paper-head">
+      <a class="paper-back" href="research.html">&larr; Back to Research</a>
+      <span class="tag">RESEARCH</span>
+      <h1>Nucore Cloak: Stopping Data Leaks to AI Tools</h1>
+      <div class="paper-meta"><span>Nucore Technologies</span><span>April 2026</span></div>
+    </div>
+  </section>
+
+  <section class="section section-light section-fit" style="padding-top: 0">
+    <div class="wrap paper-prose">
+      <div class="paper-abstract">
+        <span class="label">Summary</span>
+        <p>Nucore Cloak is an agentic AI platform that sits between a company's staff and every AI tool they use. It acts as a trusted middle layer, checking each message and removing sensitive data before it can leave the company.</p>
+      </div>
+
+      <h2>The problem</h2>
+      <p>People now use many different AI tools at work, and they often paste in sensitive things without thinking: source code, customer records, contracts, passwords. Most of those tools send that text to an outside model. Old security tools were built for email and files, not for free-form prompts, so this data quietly slips out.</p>
+
+      <h2>Our approach</h2>
+      <p>Cloak puts itself in front of every AI tool in the company. Nothing reaches an outside model without passing through it first.</p>
+      <ul>
+        <li><strong>Checks both ways.</strong> It reads each prompt going out and each answer coming back.</li>
+        <li><strong>Finds sensitive data.</strong> It spots things like keys, personal details, and private code.</li>
+        <li><strong>Hides it before it leaves.</strong> It swaps sensitive parts for safe placeholders, then puts the real values back in the answer for the user. The outside tool never sees the real data.</li>
+        <li><strong>Keeps a record.</strong> Every catch is logged so the security team can review it.</li>
+      </ul>
+
+      <h2>Why it matters</h2>
+      <p>Because Cloak sits at the connection point, it protects even tools the security team did not know people were using. Staff keep working normally, but sensitive data is caught and held back automatically.</p>
+
+      <h2>Takeaway</h2>
+      <p>Data tends to leave a company one prompt at a time. By acting as a third party in front of every AI tool, Cloak turns that open door into a guarded one.</p>
+    </div>
+  </section>
+</main>
+<footer class="site-footer"><div class="footer-grid"><div><h3>Products</h3><a href="products.html#spartan">Spartan</a><a href="products.html#kronos">Kronos</a><a href="products.html#cloak">Nucore Cloak</a><a href="products.html#helios">Helios</a></div><div><h3>Company</h3><a href="contact.html">Contact</a></div><div><h3>Resources</h3><a href="research.html">Research</a><a href="design.html">Design</a></div><div><h3>Connect</h3><a href="mailto:hello@nucore.ai">Email</a><a href="https://linkedin.com/company/nucore">LinkedIn</a><a href="https://calendly.com/nucore">Calendly</a></div></div><p class="footer-copy">Copyright 2026 Nucore Technologies</p></footer>
+<script src="nav.js"></script><script src="scroll.js"></script>
+</body>
+</html>
