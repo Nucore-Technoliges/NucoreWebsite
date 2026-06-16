@@ -2300,6 +2300,9 @@ main { overflow: clip; }
 .cloak-anim .keyboard { fill: #1d1d26; stroke: rgba(255, 255, 255, 0.1); }
 .cloak-anim .key { fill: rgba(26, 158, 74, 0.5); }
 .cloak-anim .mantle { fill: #08080d; stroke: rgba(26, 158, 74, 0.42); stroke-width: 1.3; }
+.cloak-anim .collar { fill: #0b0b12; stroke: rgba(26, 158, 74, 0.5); stroke-width: 1; }
+.cloak-anim .cape-panel { fill: #0a0a10; stroke: rgba(26, 158, 74, 0.55); stroke-width: 1.3; stroke-linejoin: round; }
+.cloak-anim .capelet { transform-box: fill-box; transform-origin: 50% 6%; animation: cl-capemove 9s ease-in-out infinite; }
 .cloak-anim .clasp { fill: var(--accent); }
 .cloak-anim .gi { fill: #0e0e13; stroke: rgba(255, 255, 255, 0.05); }
 .cloak-anim .gi-panel { fill: #1c1c24; }
@@ -2308,6 +2311,7 @@ main { overflow: clip; }
 .cloak-anim .cowl { fill: #181820; stroke: rgba(255, 255, 255, 0.06); }
 .cloak-anim .eye-slit { fill: #040406; }
 .cloak-anim .eye { fill: #c6ffdb; filter: drop-shadow(0 0 2px rgba(185, 255, 210, 0.85)); }
+.cloak-anim .eyes { transform-box: fill-box; transform-origin: center; animation: cl-dart 9s ease-in-out infinite; }
 .cloak-anim .band { fill: var(--accent); }
 .cloak-anim .band-tail { fill: var(--accent); opacity: 0.85; }
 .cloak-anim .band-tails { transform-box: fill-box; transform-origin: 95% 20%; animation: cl-flutter 1.5s ease-in-out infinite; }
@@ -2327,7 +2331,7 @@ main { overflow: clip; }
 .cloak-anim .hand-l { transform-box: fill-box; transform-origin: 80% 4%; animation: cl-hand-l 9s ease-in-out infinite; }
 .cloak-anim .hand-r { transform-box: fill-box; transform-origin: 20% 4%; animation: cl-hand-r 9s ease-in-out infinite; }
 .cloak-anim .hood { transform-box: fill-box; transform-origin: 50% 100%; animation: cl-hood 9s ease-in-out infinite; }
-.cloak-anim .arms-up { opacity: 0; animation: cl-armsup 9s ease-in-out infinite; }
+.cloak-anim .arms-up { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; animation: cl-armsup 9s ease-in-out infinite; }
 .cloak-anim .ghost { animation: cl-ghost 9s ease-in-out infinite; }
 .cloak-anim .tok { animation: cl-tok 9s ease-out infinite; }
 .cloak-anim .caret-pos { animation: cl-caret 9s linear infinite; }
@@ -2349,10 +2353,10 @@ main { overflow: clip; }
   30% { transform: rotate(-6deg); }
   36% { transform: rotate(0deg); }
   42% { transform: rotate(-5deg); }
-  46% { transform: rotate(0deg); opacity: 1; }
-  51% { transform: rotate(0deg); opacity: 0; }
-  90% { opacity: 0; }
-  93%, 100% { transform: rotate(0deg); opacity: 1; }
+  46% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  54% { transform: translateY(-30px) rotate(-22deg); opacity: 0; }
+  90% { transform: translateY(-30px) rotate(-22deg); opacity: 0; }
+  94%, 100% { transform: translateY(0) rotate(0deg); opacity: 1; }
 }
 @keyframes cl-hand-r {
   0% { transform: rotate(0deg); }
@@ -2363,26 +2367,37 @@ main { overflow: clip; }
   27% { transform: rotate(6deg); }
   33% { transform: rotate(0deg); }
   39% { transform: rotate(6deg); }
-  45% { transform: rotate(0deg); opacity: 1; }
-  51% { transform: rotate(0deg); opacity: 0; }
-  90% { opacity: 0; }
-  93%, 100% { transform: rotate(0deg); opacity: 1; }
+  45% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  54% { transform: translateY(-30px) rotate(22deg); opacity: 0; }
+  90% { transform: translateY(-30px) rotate(22deg); opacity: 0; }
+  94%, 100% { transform: translateY(0) rotate(0deg); opacity: 1; }
 }
 /* hood rests as a collar, then is pulled up over the head */
 @keyframes cl-hood {
-  0%, 52% { transform: scaleY(0.18); }
-  58% { transform: scaleY(0.6); }
-  64% { transform: scaleY(1); }
+  0%, 50% { transform: scaleY(0.18); }
+  58% { transform: scaleY(1); }
   88% { transform: scaleY(1); }
   93% { transform: scaleY(0.18); }
   100% { transform: scaleY(0.18); }
 }
 @keyframes cl-armsup {
-  0%, 48% { opacity: 0; }
-  56% { opacity: 1; }
-  66% { opacity: 1; }
-  74% { opacity: 0; }
-  100% { opacity: 0; }
+  0%, 48% { opacity: 0; transform: translateY(20px); }
+  57% { opacity: 1; transform: translateY(0); }
+  66% { opacity: 1; transform: translateY(0); }
+  74% { opacity: 0; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(0); }
+}
+@keyframes cl-dart {
+  0%, 38% { transform: translateX(0); }
+  43% { transform: translateX(-3px); }
+  48% { transform: translateX(3px); }
+  52%, 100% { transform: translateX(0); }
+}
+@keyframes cl-capemove {
+  0%, 49% { transform: scale(1); }
+  60% { transform: scale(0.46); }
+  88% { transform: scale(0.46); }
+  93%, 100% { transform: scale(1); }
 }
 @keyframes cl-ghost {
   0%, 70% { opacity: 0; }
