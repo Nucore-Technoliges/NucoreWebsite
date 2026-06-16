@@ -2177,3 +2177,302 @@ main { overflow: clip; }
 .paper-figure caption { caption-side: bottom; margin-top: 14px; color: var(--text-secondary); font-size: 13px; text-align: left; }
 .paper-refs { margin-top: 18px; padding-left: 22px; }
 .paper-refs li { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+
+/* ============================================================
+   Product media — Spartan photo, Kronos CGI, Cloak + Helios animations
+   ============================================================ */
+.product-media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.media-badge {
+  position: absolute;
+  z-index: 4;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(26, 158, 74, 0.16);
+  color: var(--accent);
+  border: 1px solid rgba(26, 158, 74, 0.45);
+  backdrop-filter: blur(6px);
+}
+.media-badge--tr { top: 13px; right: 13px; }
+.media-badge--tl { top: 13px; left: 13px; }
+.media-badge--neutral {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-light);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ---- Spartan: framed real product photo ---- */
+.product-photo {
+  aspect-ratio: 4 / 5;
+  background: #000;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: 0 26px 64px rgba(0, 0, 0, 0.24), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transition: transform 0.55s var(--ease-out-expo), box-shadow 0.55s var(--ease-out-expo);
+}
+.product-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  padding: 18px;
+  box-sizing: border-box;
+}
+.product-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(130% 100% at 50% -10%, transparent 52%, rgba(0, 0, 0, 0.42) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 26%);
+}
+.product-photo:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 36px 88px rgba(0, 0, 0, 0.32), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+.product-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 36px 16px 14px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.72));
+  color: var(--text-light);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+.product-caption b { color: var(--accent); font-weight: 500; }
+
+/* ---- Kronos: live CGI rendering (WebGL) ---- */
+.cgi-stage {
+  background:
+    radial-gradient(78% 78% at 50% 32%, rgba(26, 158, 74, 0.14), transparent 70%),
+    linear-gradient(180deg, #09090c, #101017);
+  border: 1px solid var(--border-dark);
+}
+.cgi-canvas { position: absolute; inset: 0; }
+.cgi-canvas canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.cgi-stage.is-grabbed .cgi-canvas canvas { cursor: grabbing; }
+.cgi-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-light-muted);
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease-in-out);
+}
+
+/* ---- Shared SVG animation stage ---- */
+.anim-stage {
+  background:
+    radial-gradient(70% 70% at 50% 38%, rgba(26, 158, 74, 0.10), transparent 72%),
+    linear-gradient(180deg, #0a0a0d, #101017);
+  border: 1px solid var(--border-dark);
+}
+.anim-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ---- Nucore Cloak: cloaked ninja codes, puts his hood up, turns invisible ---- */
+.cloak-anim .grid-floor { stroke: rgba(255, 255, 255, 0.05); }
+.cloak-anim .desk { fill: #15151c; stroke: rgba(255, 255, 255, 0.08); }
+.cloak-anim .keyboard { fill: #1d1d26; stroke: rgba(255, 255, 255, 0.1); }
+.cloak-anim .key { fill: rgba(26, 158, 74, 0.5); }
+.cloak-anim .mantle { fill: #08080d; stroke: rgba(26, 158, 74, 0.42); stroke-width: 1.3; }
+.cloak-anim .clasp { fill: var(--accent); }
+.cloak-anim .gi { fill: #0e0e13; stroke: rgba(255, 255, 255, 0.05); }
+.cloak-anim .gi-panel { fill: #1c1c24; }
+.cloak-anim .gi-panel2 { fill: #141419; }
+.cloak-anim .sash, .cloak-anim .sash-knot { fill: rgba(26, 158, 74, 0.55); }
+.cloak-anim .cowl { fill: #181820; stroke: rgba(255, 255, 255, 0.06); }
+.cloak-anim .eye-slit { fill: #040406; }
+.cloak-anim .eye { fill: #c6ffdb; filter: drop-shadow(0 0 2px rgba(185, 255, 210, 0.85)); }
+.cloak-anim .band { fill: var(--accent); }
+.cloak-anim .band-tail { fill: var(--accent); opacity: 0.85; }
+.cloak-anim .band-tails { transform-box: fill-box; transform-origin: 95% 20%; animation: cl-flutter 1.5s ease-in-out infinite; }
+.cloak-anim .hood-outer { fill: #0a0a10; stroke: var(--accent); stroke-width: 1.4; }
+.cloak-anim .hood-inner { fill: #030305; }
+.cloak-anim .hood-seam { stroke: rgba(26, 158, 74, 0.4); stroke-width: 1; }
+.cloak-anim .ghost { fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: 4 5; }
+.cloak-anim .tok { transform-box: fill-box; transform-origin: left center; }
+.cloak-anim .tok-key { fill: var(--accent); }
+.cloak-anim .tok-var { fill: #6ea8ff; }
+.cloak-anim .tok-str { fill: #d6ffe6; }
+.cloak-anim .tok-pun { fill: rgba(255, 255, 255, 0.3); }
+.cloak-anim .tok-com { fill: rgba(255, 255, 255, 0.22); }
+
+.cloak-anim .ninja { animation: cl-vanish 9s ease-in-out infinite; }
+.cloak-anim .screen { animation: cl-vanish 9s ease-in-out infinite; }
+.cloak-anim .hand-l { transform-box: fill-box; transform-origin: 80% 4%; animation: cl-hand-l 9s ease-in-out infinite; }
+.cloak-anim .hand-r { transform-box: fill-box; transform-origin: 20% 4%; animation: cl-hand-r 9s ease-in-out infinite; }
+.cloak-anim .hood { transform-box: fill-box; transform-origin: 50% 100%; animation: cl-hood 9s ease-in-out infinite; }
+.cloak-anim .arms-up { opacity: 0; animation: cl-armsup 9s ease-in-out infinite; }
+.cloak-anim .ghost { animation: cl-ghost 9s ease-in-out infinite; }
+.cloak-anim .tok { animation: cl-tok 9s ease-out infinite; }
+.cloak-anim .caret-pos { animation: cl-caret 9s linear infinite; }
+.cloak-anim .caret { animation: cl-blink 0.7s steps(1, end) infinite; }
+
+@keyframes cl-vanish {
+  0%, 58% { opacity: 1; }
+  66% { opacity: 1; }
+  76% { opacity: 0.05; }
+  88% { opacity: 0.05; }
+  94%, 100% { opacity: 1; }
+}
+@keyframes cl-hand-l {
+  0% { transform: rotate(0deg); }
+  6% { transform: rotate(-6deg); }
+  12% { transform: rotate(0deg); }
+  18% { transform: rotate(-6deg); }
+  24% { transform: rotate(0deg); }
+  30% { transform: rotate(-6deg); }
+  36% { transform: rotate(0deg); }
+  42% { transform: rotate(-5deg); }
+  46% { transform: rotate(0deg); opacity: 1; }
+  51% { transform: rotate(0deg); opacity: 0; }
+  90% { opacity: 0; }
+  93%, 100% { transform: rotate(0deg); opacity: 1; }
+}
+@keyframes cl-hand-r {
+  0% { transform: rotate(0deg); }
+  3% { transform: rotate(6deg); }
+  9% { transform: rotate(0deg); }
+  15% { transform: rotate(6deg); }
+  21% { transform: rotate(0deg); }
+  27% { transform: rotate(6deg); }
+  33% { transform: rotate(0deg); }
+  39% { transform: rotate(6deg); }
+  45% { transform: rotate(0deg); opacity: 1; }
+  51% { transform: rotate(0deg); opacity: 0; }
+  90% { opacity: 0; }
+  93%, 100% { transform: rotate(0deg); opacity: 1; }
+}
+/* hood rests as a collar, then is pulled up over the head */
+@keyframes cl-hood {
+  0%, 52% { transform: scaleY(0.18); }
+  58% { transform: scaleY(0.6); }
+  64% { transform: scaleY(1); }
+  88% { transform: scaleY(1); }
+  93% { transform: scaleY(0.18); }
+  100% { transform: scaleY(0.18); }
+}
+@keyframes cl-armsup {
+  0%, 48% { opacity: 0; }
+  56% { opacity: 1; }
+  66% { opacity: 1; }
+  74% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes cl-ghost {
+  0%, 70% { opacity: 0; }
+  77% { opacity: 0.55; }
+  84% { opacity: 0.2; }
+  90%, 100% { opacity: 0; }
+}
+@keyframes cl-tok {
+  0% { transform: scaleX(0); }
+  4% { transform: scaleX(1); }
+  100% { transform: scaleX(1); }
+}
+@keyframes cl-caret {
+  0% { transform: translate(52px, 0); }
+  8% { transform: translate(52px, 0); }
+  10% { transform: translate(57px, 14px); }
+  16% { transform: translate(57px, 14px); }
+  18% { transform: translate(83px, 28px); }
+  26% { transform: translate(83px, 28px); }
+  28% { transform: translate(48px, 42px); }
+  34% { transform: translate(48px, 42px); }
+  36% { transform: translate(72px, 56px); }
+  100% { transform: translate(72px, 56px); }
+}
+@keyframes cl-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes cl-flutter {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50% { transform: rotate(9deg) translateY(2px); }
+}
+
+/* ---- Helios: jumbled data in, neat boxes out ---- */
+.helios-anim .machine { fill: #15151c; stroke: rgba(255, 255, 255, 0.1); }
+.helios-anim .machine-edge { fill: #1d1d26; stroke: rgba(255, 255, 255, 0.08); }
+.helios-anim .funnel { fill: rgba(26, 158, 74, 0.12); stroke: rgba(26, 158, 74, 0.4); }
+.helios-anim .core { fill: var(--accent); animation: he-pulse 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.helios-anim .gear { stroke: rgba(26, 158, 74, 0.6); fill: none; animation: he-spin 4s linear infinite; transform-box: fill-box; transform-origin: center; }
+.helios-anim .scan { stroke: rgba(185, 255, 210, 0.7); animation: he-scan 1.8s ease-in-out infinite; }
+.helios-anim .io-label { fill: var(--text-light-muted); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.16em; }
+.helios-anim .io-label.out { fill: var(--accent); }
+
+.helios-anim .feed-layer { transform: translate(132px, 150px); }
+.helios-anim .dp {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: he-feed 5s ease-in infinite;
+}
+.helios-anim .out-layer { transform: translate(258px, 150px); }
+.helios-anim .ob {
+  transform-box: fill-box;
+  transform-origin: center;
+  fill: rgba(26, 158, 74, 0.85);
+  stroke: rgba(185, 255, 210, 0.5);
+  stroke-width: 1;
+  animation: he-stack 5s ease-out infinite;
+}
+
+@keyframes he-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.82); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+@keyframes he-spin { to { transform: rotate(360deg); } }
+@keyframes he-scan {
+  0%, 100% { transform: translateY(-13px); opacity: 0.2; }
+  50% { transform: translateY(13px); opacity: 0.9; }
+}
+@keyframes he-feed {
+  0% { transform: translate(var(--dx), var(--dy)) rotate(var(--dr)) scale(1); opacity: 0; }
+  10% { opacity: 1; }
+  46% { transform: translate(0, 0) rotate(0deg) scale(0.92); opacity: 1; }
+  56% { transform: translate(12px, 0) rotate(0deg) scale(0.14); opacity: 0; }
+  100% { transform: translate(12px, 0) scale(0.14); opacity: 0; }
+}
+@keyframes he-stack {
+  0%, 4% { transform: translate(0, 0) scale(0.15); opacity: 0; }
+  10% { transform: translate(6px, 0) scale(1); opacity: 1; }
+  30% { transform: translate(var(--bx), var(--by)) scale(1); opacity: 1; }
+  82% { transform: translate(var(--bx), var(--by)) scale(1); opacity: 1; }
+  94% { transform: translate(calc(var(--bx) + 34px), var(--by)) scale(1); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@media (max-width: 900px) {
+  .product-media { max-width: 520px; margin-inline: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cloak-anim .ninja, .cloak-anim .screen, .cloak-anim .hand-l, .cloak-anim .hand-r,
+  .cloak-anim .band-tails, .cloak-anim .hood, .cloak-anim .arms-up, .cloak-anim .tok, .cloak-anim .caret-pos, .cloak-anim .caret,
+  .helios-anim .core, .helios-anim .gear, .helios-anim .scan { animation: none; }
+  .cloak-anim .ghost { display: none; }
+  .cloak-anim .hood { transform: scaleY(0.18); }
+  .cloak-anim .tok { transform: scaleX(1); }
+  .cloak-anim .caret-pos { transform: translate(72px, 56px); }
+  .helios-anim .dp { animation: none; opacity: 1; transform: translate(var(--dx), var(--dy)); }
+  .helios-anim .ob { animation: none; opacity: 1; transform: translate(var(--bx), var(--by)); }
+}
