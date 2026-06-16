@@ -2227,6 +2227,15 @@ main { overflow: clip; }
   padding: 18px;
   box-sizing: border-box;
 }
+.product-photo--tall { aspect-ratio: 2 / 3; }
+.render-note {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-light-muted);
+  text-align: center;
+}
 .product-photo::after {
   content: "";
   position: absolute;
@@ -2257,9 +2266,7 @@ main { overflow: clip; }
 
 /* ---- Kronos: live CGI rendering (WebGL) ---- */
 .cgi-stage {
-  background:
-    radial-gradient(78% 78% at 50% 32%, rgba(26, 158, 74, 0.14), transparent 70%),
-    linear-gradient(180deg, #09090c, #101017);
+  background: linear-gradient(180deg, #0a0a0d, #0e0e13);
   border: 1px solid var(--border-dark);
 }
 .cgi-canvas { position: absolute; inset: 0; }
@@ -2282,9 +2289,7 @@ main { overflow: clip; }
 
 /* ---- Shared SVG animation stage ---- */
 .anim-stage {
-  background:
-    radial-gradient(70% 70% at 50% 38%, rgba(26, 158, 74, 0.10), transparent 72%),
-    linear-gradient(180deg, #0a0a0d, #101017);
+  background: linear-gradient(180deg, #0a0a0d, #0e0e13);
   border: 1px solid var(--border-dark);
 }
 .anim-stage svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
