@@ -1,4 +1,4 @@
-const CALENDLY_URL = "https://calendly.com/nucore";
+const CALENDLY_URL = "https://calendly.com/mkarthik2029/nucore-demo";
 
 function logoSvg() {
   return `<img class="brand-mark" src="assets/nucore-logo.png" alt="Nucore" />`;
