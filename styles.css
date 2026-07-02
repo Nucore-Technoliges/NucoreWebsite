@@ -814,8 +814,6 @@ main { overflow: clip; }
 .about-hero .accent-line { color: var(--accent); }
 
 .contact-main { display: grid; grid-template-columns: 0.9fr 1fr; gap: clamp(36px, 6vw, 84px); align-items: center; }
-.contact-list { display: grid; gap: 18px; margin-top: 34px; }
-.contact-list li { color: var(--text-secondary); }
 .form-card {
   background: var(--bg-secondary);
   box-shadow: 0 12px 40px var(--shadow-soft);
